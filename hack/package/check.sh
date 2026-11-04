@@ -25,6 +25,8 @@ pod=json.load(sys.stdin)["items"][0]
 assert "@sha256:" in pod["spec"]["containers"][0]["image"]
 assert "sha256sum -c" in " ".join(pod["spec"]["initContainers"][0]["command"])
 print("PASS: signed package Ready; runtime image pinned; downloaded binary verified by SHA256")'
-mkdir -p /work/evidence/package
-k get repository.kubepkg.dev/rknetes package.kubepkg.dev/kuberoot-rknetes -o yaml > /work/evidence/package/installed.yaml
-sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-3.tgz > /work/evidence/package/sha256.txt
+evidence=${RK_PACKAGE_EVIDENCE:-/work/evidence/package}
+[[ "$evidence" == /work/evidence/* ]] || exit 2
+mkdir -p "$evidence"
+k get repository.kubepkg.dev/rknetes package.kubepkg.dev/kuberoot-rknetes -o yaml > "$evidence/installed.yaml"
+sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-3.tgz > "$evidence/sha256.txt"

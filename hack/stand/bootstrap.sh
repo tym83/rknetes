@@ -6,14 +6,18 @@ STAGE=${1:?install or configure stage}; shift
 CP_IP=${1:?control plane VM IP}
 W1_IP=${2:?worker 1 VM IP}
 W2_IP=${3:?worker 2 VM IP}
-mkdir -p /work/kube
-cp /work/trust/admin.kubeconfig /work/kube/node.conf
-kubectl --context admin@workshop --kubeconfig /work/kube/node.conf config rename-context kuberoot admin@workshop >/dev/null
-node() { local address=$1; shift; kubectl --context admin@workshop --kubeconfig /work/kube/node.conf --server "https://$address:50000" --request-timeout=15s "$@"; }
+KUBE_DIR=$(dirname "${RKNETES_KUBECONFIG:-/work/kube/rknetes.conf}")
+case "$KUBE_DIR" in /work/kube|/work/cleanroom/kube) ;; *) exit 2 ;; esac
+mkdir -p "$KUBE_DIR"
+cp /work/trust/admin.kubeconfig $KUBE_DIR/node.conf
+kubectl --context admin@workshop --kubeconfig $KUBE_DIR/node.conf config rename-context kuberoot admin@workshop >/dev/null
+node() { local address=$1; shift; kubectl --context admin@workshop --kubeconfig $KUBE_DIR/node.conf --server "https://$address:50000" --request-timeout=15s "$@"; }
 if [[ "$STAGE" == install ]]; then
   for address in "$CP_IP" "$W1_IP" "$W2_IP"; do
-    node "$address" get disks -o json > /work/tmp/disks.json
-    python3 -c 'import json; ds=json.load(open("/work/tmp/disks.json"))["items"]; d=next(x for x in ds if x["metadata"]["name"]=="vdb"); assert not d.get("status",{}).get("role"), "system disk is not empty"'
+    node "$address" get disks -o json > $KUBE_DIR/disks.json
+    python3 -c 'import json,sys; ds=json.load(open(sys.argv[1]))["items"]; d=next(x for x in ds if x["metadata"]["name"]=="vdb"); assert not d.get("status",{}).get("role"), "system disk is not empty"' "$KUBE_DIR/disks.json"
+  done
+  for address in "$CP_IP" "$W1_IP" "$W2_IP"; do
     name=$(node "$address" get osconfig -o jsonpath='{.items[0].metadata.name}')
     node "$address" patch osconfig "$name" --type merge -p '{"spec":{"nameservers":["1.1.1.1","8.8.8.8"]}}'
     node "$address" create -f - <<'YAML'
@@ -40,16 +44,16 @@ fi
 for address in "$CP_IP" "$W1_IP" "$W2_IP"; do
   ready=false
   for _ in $(seq 1 90); do
-    if node "$address" get bootentries -o json > /work/tmp/install.json 2>/dev/null && python3 -c 'import json; a=json.load(open("/work/tmp/install.json")); exit(not any(x.get("status",{}).get("booted",False) for x in a["items"]))'; then ready=true; break; fi
+    if node "$address" get bootentries -o json > $KUBE_DIR/install.json 2>/dev/null && python3 -c 'import json,sys; a=json.load(open(sys.argv[1])); exit(not any(x.get("status",{}).get("booted",False) for x in a["items"]))' "$KUBE_DIR/install.json"; then ready=true; break; fi
     sleep 3
   done
   [[ "$ready" == true ]] || exit 1
 done
-node "$CP_IP" get kubeconfig admin -o jsonpath='{.kubeconfig}' > /work/kube/rknetes.conf
-chmod 600 /work/kube/*.conf
-old=$(kubectl --context admin@workshop --kubeconfig /work/kube/rknetes.conf config current-context)
-if [[ "$old" != admin@workshop ]]; then kubectl --context admin@workshop --kubeconfig /work/kube/rknetes.conf config rename-context "$old" admin@workshop >/dev/null; fi
-export KUBECONFIG=/work/kube/rknetes.conf
+node "$CP_IP" get kubeconfig admin -o jsonpath='{.kubeconfig}' > $KUBE_DIR/rknetes.conf
+chmod 600 "$KUBE_DIR"/*.conf
+old=$(kubectl --context admin@workshop --kubeconfig $KUBE_DIR/rknetes.conf config current-context)
+if [[ "$old" != admin@workshop ]]; then kubectl --context admin@workshop --kubeconfig $KUBE_DIR/rknetes.conf config rename-context "$old" admin@workshop >/dev/null; fi
+export KUBECONFIG=$KUBE_DIR/rknetes.conf
 k() { kubectl --context admin@workshop "$@"; }
 k -n kube-system create configmap rknetes-stand --from-literal=scope=nested-only --from-literal=podCIDR=10.42.0.0/16 --from-literal=serviceCIDR=10.96.0.0/12 --dry-run=client -o yaml | k apply -f -
 for address in "$W1_IP" "$W2_IP"; do

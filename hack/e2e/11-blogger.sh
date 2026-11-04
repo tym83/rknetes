@@ -11,11 +11,9 @@ metadata: {name: channel}
 spec: {resource: configmaps, name: channel, registered: false, threshold: 3}
 YAML
 k -n rknet-system rollout status deployment/watch-office --timeout=120s
-k -n rknet-system port-forward service/watch-office 19444:443 > /tmp/rknetes-watch-forward.log 2>&1 &
-forward=$!
-private=$(mktemp -d /work/tls/watch-client.XXXXXX)
-trap 'kill "$forward" 2>/dev/null || true; rm -rf "$private"' EXIT
-sleep 2
+start_forward rknet-system service/watch-office 19444:443
+private=$(mktemp -d "$RK_TLS_DIR/watch-client.XXXXXX")
+trap 'stop_forward; rm -rf "$private"' EXIT
 python3 - "$private" <<'PY'
 import base64,json,pathlib,subprocess,sys
 p=pathlib.Path(sys.argv[1]);p.chmod(0o700)
@@ -25,8 +23,8 @@ for field,name in [('client-certificate-data','client.crt'),('client-key-data','
     target=p/name;target.write_bytes(base64.b64decode(u[field]));target.chmod(0o600)
 PY
 python3 - "$private" <<'PY'
-import http.client,ssl,sys,subprocess,time
-ctx=ssl.create_default_context(cafile='/work/tls/watch/tls.crt')
+import http.client,ssl,sys,subprocess,time,os
+ctx=ssl.create_default_context(cafile=os.environ['RK_TLS_DIR']+'/watch/tls.crt')
 ctx.load_cert_chain(sys.argv[1]+'/client.crt',sys.argv[1]+'/client.key')
 path='/api/v1/namespaces/lab-blogger/configmaps?watch=true&fieldSelector=metadata.name%3Dchannel&resourceVersion=0&timeoutSeconds=60'
 connections=[]

@@ -2,8 +2,31 @@
 set -euo pipefail
 export PATH=/work/bin:/work/out/rknetes:$PATH
 export KUBECONFIG=${RKNETES_KUBECONFIG:-/work/kube/rknetes.conf}
-[[ "$KUBECONFIG" == /work/kube/rknetes.conf ]] || { echo 'tests require the dedicated nested kubeconfig' >&2; exit 1; }
+case "$KUBECONFIG" in
+  /work/kube/rknetes.conf|/work/cleanroom/kube/rknetes.conf) ;;
+  *) echo 'tests require a dedicated nested kubeconfig' >&2; exit 1 ;;
+esac
+export RK_TLS_DIR=${RK_TLS_DIR:-/work/tls}
+case "$RK_TLS_DIR" in /work/tls|/work/cleanroom/tls) ;; *) exit 2 ;; esac
 k() { kubectl --context admin@workshop "$@"; }
+start_forward() {
+  local namespace=$1 resource=$2 ports=$3
+  forward_log=$(mktemp /work/tmp/rknetes-forward.XXXXXX)
+  kubectl --context admin@workshop -n "$namespace" port-forward "$resource" "$ports" > "$forward_log" 2>&1 &
+  forward=$!
+  for _ in $(seq 1 20); do
+    if ! kill -0 "$forward" 2>/dev/null; then cat "$forward_log" >&2; stop_forward; return 1; fi
+    if grep -q 'Forwarding from' "$forward_log"; then return 0; fi
+    sleep 1
+  done
+  cat "$forward_log" >&2
+  stop_forward
+  return 1
+}
+stop_forward() {
+  if [[ -n "${forward:-}" ]]; then kill "$forward" 2>/dev/null || true; wait "$forward" 2>/dev/null || true; fi
+  if [[ -n "${forward_log:-}" ]]; then rm -f "$forward_log"; fi
+}
 [[ "$(k -n kube-system get cm rknetes-stand -o jsonpath='{.data.scope}')" == nested-only ]]
 new_namespace() {
   local name=$1
