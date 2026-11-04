@@ -17,6 +17,12 @@ import (
 // PrintNamespace uses a trusted local port-forward to Hubble Relay. Packet
 // forwarding verdicts are observations, not proof of application success.
 func PrintNamespace(ctx context.Context, endpoint, namespace string, out io.Writer) error {
+	return PrintRoot(ctx, endpoint, namespace, nil, out)
+}
+
+// PrintRoot joins packet observations by endpoint, starting only from the
+// selected application's Pods. A joined path does not establish causality.
+func PrintRoot(ctx context.Context, endpoint, namespace string, roots []string, out io.Writer) error {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	connection, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -31,6 +37,7 @@ func PrintNamespace(ctx context.Context, endpoint, namespace string, out io.Writ
 		return fmt.Errorf("Hubble observation: %w", err)
 	}
 	counts := map[string]int{}
+	graph := Graph{}
 	total := 0
 	for {
 		message, err := stream.Recv()
@@ -53,6 +60,7 @@ func PrintNamespace(ctx context.Context, endpoint, namespace string, out io.Writ
 		if destination.GetPodName() == "" {
 			to = f.GetIP().GetDestination()
 		}
+		graph.Add(from, to, f.GetVerdict().String())
 		if svc := f.GetDestinationService(); svc.GetName() != "" {
 			to += " (service " + svc.GetNamespace() + "/" + svc.GetName() + ")"
 		}
@@ -76,6 +84,9 @@ func PrintNamespace(ctx context.Context, endpoint, namespace string, out io.Writ
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
+	if len(roots) > 0 {
+		graph.Print(roots, out)
+	}
 	fmt.Fprintf(out, "Observed Hubble packet flows: %d records in the recent sample\n", total)
 	for _, key := range keys {
 		fmt.Fprintf(out, "  %s records=%d\n", key, counts[key])

@@ -73,7 +73,11 @@ func run() error {
 			return err
 		}
 		if *hubble != "" {
-			return flows.PrintNamespace(ctx, *hubble, *namespace, os.Stdout)
+			roots, err := rootPods(ctx, c, *namespace, name)
+			if err != nil {
+				return err
+			}
+			return flows.PrintRoot(ctx, *hubble, *namespace, roots, os.Stdout)
 		}
 		return nil
 	case "publication":
@@ -93,6 +97,27 @@ func run() error {
 	default:
 		return fmt.Errorf("unknown command %s", args[0])
 	}
+}
+
+func rootPods(ctx context.Context, c *cluster.Client, ns, name string) ([]string, error) {
+	pods, err := c.List(ctx, "pods", ns)
+	if err != nil {
+		return nil, err
+	}
+	selector := map[string]string{}
+	if svc, err := c.R("services", ns).Get(ctx, name, metav1.GetOptions{}); err == nil {
+		selector = cluster.Labels(svc.Object, "spec", "selector")
+	}
+	roots := []string{}
+	for _, pod := range pods {
+		if pod.GetName() == name || (len(selector) > 0 && cluster.Match(pod.GetLabels(), selector)) {
+			roots = append(roots, ns+"/"+pod.GetName())
+		}
+	}
+	if len(roots) == 0 {
+		roots = append(roots, ns+"/"+name)
+	}
+	return roots, nil
 }
 func why(ctx context.Context, c *cluster.Client, ns, name string, seen map[string]bool, indent string) error {
 	if seen[name] {
