@@ -62,11 +62,6 @@ spec: {nodeName: $name, role: Worker}
 YAML
   node "$CP_IP" get jointicket "$name" -o jsonpath='{.status.membership}' | node "$address" create -f -
 done
-helm upgrade --install cilium cilium --repo https://helm.cilium.io --version 1.20.4 --namespace kube-system \
-  --kube-context admin@workshop --set ipam.mode=kubernetes --set kubeProxyReplacement=false \
-  --set bandwidthManager.enabled=true --set 'policyCIDRMatchMode={pods,nodes}' \
-  --set k8sServiceHost="$CP_IP" --set k8sServicePort=6443 --set operator.replicas=1 \
-  --set bpf.masquerade=true --set hubble.enabled=true --set hubble.relay.enabled=true
-k -n kube-system rollout status daemonset/cilium --timeout=300s
+bash /work/src/rknetes/hack/stand/cilium.sh "$CP_IP"
 k wait --for=condition=Ready nodes --all --timeout=180s
 k get nodes -o wide

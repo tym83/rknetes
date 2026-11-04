@@ -14,6 +14,11 @@ p=Path(sys.argv[1]);s=p.read_text()
 a='Name:  "E2E_PARALLEL",\n\t\t\t\t\t\t\tValue: fmt.Sprintf("%d", viper.Get("parallel"))'
 b='Name:  "E2E_EXTRA_GINKGO_ARGS",\n\t\t\t\t\t\t\tValue: fmt.Sprintf("--procs=%d", viper.Get("parallel"))'
 assert s.count(a)==1
+s=s.replace(a,b)
+# The suite deliberately adds NoExecute taints. Its own runner must survive.
+a='RestartPolicy:      v1.RestartPolicyNever,'
+b='Tolerations: []v1.Toleration{{Operator: v1.TolerationOpExists}},\n\t\t\t'+a
+assert s.count(a)==1
 p.write_text(s.replace(a,b))
 PY
 cd "$work"
