@@ -13,7 +13,7 @@ import (
 func main() {
 	args := os.Args[1:]
 	for i, arg := range args {
-		if arg == "max" && i+1 < len(args) {
+		if i == commandIndex(args) && arg == "max" && i+1 < len(args) {
 			server, ca := os.Getenv("HODATAY_MAX_SERVER"), os.Getenv("HODATAY_MAX_CA")
 			if server == "" || ca == "" {
 				fmt.Fprintln(os.Stderr, "HODATAY_MAX_SERVER and HODATAY_MAX_CA are required")
@@ -30,9 +30,11 @@ func main() {
 	}
 	plainVersion := false
 	structured := false
+	index := commandIndex(args)
+	plainVersion = index >= 0 && args[index] == "version"
 	for _, a := range args {
-		if a == "version" {
-			plainVersion = true
+		if a == "--" {
+			break
 		}
 		if a == "-o" || a == "--output" || strings.HasPrefix(a, "-o=") || strings.HasPrefix(a, "--output=") {
 			structured = true
@@ -60,6 +62,9 @@ func main() {
 	}
 	yaml := false
 	for i, a := range args {
+		if a == "--" {
+			break
+		}
 		if a == "-o=yaml" || a == "--output=yaml" || ((a == "-o" || a == "--output") && i+1 < len(args) && args[i+1] == "yaml") {
 			yaml = true
 		}
@@ -89,4 +94,29 @@ func exit(err error) {
 	}
 	io.WriteString(os.Stderr, err.Error()+"\n")
 	os.Exit(1)
+}
+
+// Intercept a command, never a namespace, resource name or exec argument.
+func commandIndex(args []string) int {
+	values := map[string]bool{"--context": true, "--kubeconfig": true, "-n": true, "--namespace": true, "--server": true, "-s": true, "--certificate-authority": true, "--client-certificate": true, "--client-key": true, "--token": true, "--as": true, "--as-group": true, "--user": true, "--cluster": true, "--request-timeout": true, "--tls-server-name": true, "--v": true, "-v": true}
+	switches := map[string]bool{"--insecure-skip-tls-verify": true, "--warnings-as-errors": true, "--disable-compression": true, "--match-server-version": true}
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			return -1
+		}
+		if !strings.HasPrefix(a, "-") {
+			return i
+		}
+		if strings.Contains(a, "=") || switches[a] {
+			continue
+		}
+		if values[a] {
+			i++
+			continue
+		}
+		// Unknown global flags remain the upstream client's responsibility.
+		return -1
+	}
+	return -1
 }

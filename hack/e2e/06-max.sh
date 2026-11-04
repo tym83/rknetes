@@ -8,7 +8,7 @@ forward=$!
 trap 'kill "$forward" 2>/dev/null || true' EXIT
 for _ in $(seq 1 20); do if grep -q Forwarding /work/tmp/max-forward.log; then break; fi; sleep 1; done
 export HODATAY_MAX_SERVER=https://127.0.0.1:19443 HODATAY_MAX_CA=/work/tls/maxlet/tls.crt HODATAY_KUBECTL=/work/bin/kubectl
-hodatay max --context admin@workshop -n "$NS" exec client -- echo max-recorded-call
+kubectl max --context admin@workshop -n "$NS" exec client -- echo max-recorded-call
 k -n rknet-system logs -l app=maxlet --tail=3
 # The session recorder writes actual upgraded stream bytes, not just request metadata.
 found=false
