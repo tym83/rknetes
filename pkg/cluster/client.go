@@ -87,6 +87,14 @@ func (c *Client) Apply(ctx context.Context, resource string, o *Object) error {
 	if old.GetLabels()["rknetes.su/managed"] != "true" {
 		return fmt.Errorf("refusing to adopt unmanaged %s/%s", resource, o.GetName())
 	}
+	if resource == "services" {
+		// Preserve API-assigned addresses across reconciliation.
+		for _, field := range []string{"clusterIP", "clusterIPs", "ipFamilies", "ipFamilyPolicy"} {
+			if v, found, _ := unstructured.NestedFieldCopy(old.Object, "spec", field); found {
+				_ = unstructured.SetNestedField(o.Object, v, "spec", field)
+			}
+		}
+	}
 	if reflect.DeepEqual(old.Object["spec"], o.Object["spec"]) && reflect.DeepEqual(old.Object["data"], o.Object["data"]) {
 		return nil
 	}

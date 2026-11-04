@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-type Controller struct{ C *cluster.Client }
+type Controller struct {
+	C         *cluster.Client
+	Namespace string
+}
 
 func (r *Controller) Run(ctx context.Context) error {
 	if err := r.C.Guard(ctx); err != nil {
@@ -21,6 +24,9 @@ func (r *Controller) Run(ctx context.Context) error {
 			log.Printf("namespace reconciliation: %v", err)
 		}
 		for _, ns := range namespaces {
+			if (r.Namespace != "" && ns.GetName() != r.Namespace) || (r.Namespace == "" && ns.GetLabels()["rknetes.su/independent-controller"] == "true") {
+				continue
+			}
 			if ns.GetLabels()["rknetes.su/lab"] != "true" {
 				continue
 			}
@@ -28,7 +34,7 @@ func (r *Controller) Run(ctx context.Context) error {
 				name string
 				run  func(context.Context, string) error
 			}{
-				{"reestr", r.Reestr}, {"throttle", r.Throttle}, {"whitelist", r.Whitelist},
+				{"reestr", r.Reestr}, {"throttle", r.Throttle}, {"whitelist", r.Whitelist}, {"werewolf", r.Werewolf},
 				{"escrow", r.Escrow}, {"drill", r.Drill}, {"cooling", r.Cooling}, {"statement", r.Statement},
 			} {
 				if err := step.run(ctx, ns.GetName()); err != nil {

@@ -49,7 +49,7 @@ func (r *Controller) Drill(ctx context.Context, ns string) error {
 		for k, v := range selector {
 			match[k] = v
 		}
-		if err := r.cnp(ctx, ns, "drill-"+d.GetName(), cluster.Map{"endpointSelector": cluster.Map{}, "egress": []interface{}{cluster.Map{"toEntities": []interface{}{"all"}}}, "egressDeny": []interface{}{cluster.Map{"toEndpoints": []interface{}{cluster.Map{"matchLabels": match}}}}}, d); err != nil {
+		if err := r.cnp(ctx, ns, "drill-"+d.GetName(), cluster.Map{"endpointSelector": cluster.Map{}, "enableDefaultDeny": cluster.Map{"egress": false, "ingress": false}, "egressDeny": []interface{}{cluster.Map{"toEndpoints": []interface{}{cluster.Map{"matchLabels": match}}}}}, d); err != nil {
 			return err
 		}
 		if err := r.C.Status(ctx, "sovereigntydrills", d, cluster.Map{"conditions": conditions(cluster.Condition("Ready", "True", "NoContradictingReports", "Учения прошли успешно"))}); err != nil {

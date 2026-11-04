@@ -13,6 +13,7 @@ import (
 func main() {
 	kubeconfig := flag.String("kubeconfig", "", "nested cluster kubeconfig; empty uses the pod service account")
 	contextName := flag.String("context", "admin@workshop", "context in the nested cluster kubeconfig")
+	namespace := flag.String("namespace", "", "manage one lab namespace; empty manages non-independent labs")
 	flag.Parse()
 	c, err := cluster.New(*kubeconfig, *contextName)
 	if err != nil {
@@ -20,7 +21,7 @@ func main() {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-	if err := (&controller.Controller{C: c}).Run(ctx); err != nil {
+	if err := (&controller.Controller{C: c, Namespace: *namespace}).Run(ctx); err != nil {
 		log.Fatal(err)
 	}
 }
