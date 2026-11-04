@@ -84,8 +84,14 @@ func withNetNS(path string, fn func() error) error {
 		return err
 	}
 	defer target.Close()
-	a, _ := old.Stat()
-	b, _ := target.Stat()
+	a, err := old.Stat()
+	if err != nil {
+		return err
+	}
+	b, err := target.Stat()
+	if err != nil {
+		return err
+	}
 	if os.SameFile(a, b) {
 		return fmt.Errorf("refusing own network namespace")
 	}
@@ -108,7 +114,7 @@ func withNetNS(path string, fn func() error) error {
 	return fn()
 }
 
-func attach(path, object string, settings Settings) (*attachment, error) {
+func attach(path, object string, settings Settings, expected netip.Addr) (*attachment, error) {
 	spec, err := ebpf.LoadCollectionSpec(object)
 	if err != nil {
 		return nil, err
@@ -127,6 +133,20 @@ func attach(path, object string, settings Settings) (*attachment, error) {
 		iface, err := net.InterfaceByName("eth0")
 		if err != nil {
 			return err
+		}
+		addresses, err := iface.Addrs()
+		if err != nil {
+			return err
+		}
+		matched := false
+		for _, address := range addresses {
+			p, err := netip.ParsePrefix(address.String())
+			if err == nil && p.Addr() == expected {
+				matched = true
+			}
+		}
+		if !matched {
+			return fmt.Errorf("sandbox namespace no longer owns expected Pod address %s", expected)
 		}
 		for _, direction := range []ebpf.AttachType{ebpf.AttachTCXIngress, ebpf.AttachTCXEgress} {
 			l, err := link.AttachTCX(link.TCXOptions{Interface: iface.Index, Program: collection.Programs["sovereign_window"], Attach: direction})
@@ -223,6 +243,7 @@ func (a *Agent) reconcile(ctx context.Context, cr cri.RuntimeServiceClient) erro
 			continue
 		}
 		var selected *cluster.Object
+		overlap := false
 		for i := range policies {
 			p := &policies[i]
 			selector := cluster.Labels(p.Object, "spec", "selector")
@@ -230,11 +251,15 @@ func (a *Agent) reconcile(ctx context.Context, cr cri.RuntimeServiceClient) erro
 				continue
 			}
 			if selected != nil {
-				return fmt.Errorf("overlapping byte policies for %s/%s", pod.GetNamespace(), pod.GetName())
+				message := fmt.Sprintf("overlapping byte policies for %s/%s", pod.GetNamespace(), pod.GetName())
+				failures[string(selected.GetUID())] = append(failures[string(selected.GetUID())], message)
+				failures[string(p.GetUID())] = append(failures[string(p.GetUID())], message)
+				overlap = true
+				break
 			}
 			selected = p
 		}
-		if selected == nil {
+		if selected == nil || overlap {
 			continue
 		}
 		key := string(pod.GetUID())
@@ -278,7 +303,7 @@ func (a *Agent) reconcile(ctx context.Context, cr cri.RuntimeServiceClient) erro
 			delete(a.active, key)
 		}
 		if a.active[key] == nil {
-			att, err := attach(path, a.Object, settings)
+			att, err := attach(path, a.Object, settings, ip)
 			if err != nil {
 				failures[pkey] = append(failures[pkey], fmt.Sprintf("%s: %v", pod.GetName(), err))
 				continue

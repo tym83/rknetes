@@ -15,7 +15,14 @@ func main() {
 	node := flag.String("node", os.Getenv("NODE_NAME"), "nested node identity")
 	socket := flag.String("socket", "/run/containerd/containerd.sock", "containerd CRI socket")
 	object := flag.String("object", "/rk/tspu.o", "compiled byte-policy object")
+	selfTest := flag.Bool("self-test", false, "execute boundary and sequence tests in the kernel without attaching")
 	flag.Parse()
+	if *selfTest {
+		if err := tspu.KernelCheck(*object); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	c, err := cluster.New("", "")
 	if err != nil {
 		log.Fatal(err)

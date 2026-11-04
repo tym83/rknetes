@@ -13,7 +13,11 @@ import (
 // The small health check and the large raw transfer are independent real paths.
 func main() {
 	listen := flag.String("listen", ":8080", "HTTP health listener")
+	chunkSize := flag.Int("chunk", 1024, "raw TCP payload bytes per write")
 	flag.Parse()
+	if *chunkSize < 1 || *chunkSize > 65536 {
+		log.Fatal("chunk must be 1..65536")
+	}
 	go func() {
 		listener, err := net.Listen("tcp", ":8081")
 		if err != nil {
@@ -28,11 +32,13 @@ func main() {
 			go func(c net.Conn) {
 				defer c.Close()
 				_ = c.(*net.TCPConn).SetNoDelay(true)
-				payload := bytes.Repeat([]byte{'x'}, 1024)
-				for i := 0; i < 64; i++ {
-					if _, err := c.Write(payload); err != nil {
+				payload := bytes.Repeat([]byte{'x'}, *chunkSize)
+				for remaining := 65536; remaining > 0; {
+					n := min(remaining, len(payload))
+					if _, err := c.Write(payload[:n]); err != nil {
 						return
 					}
+					remaining -= n
 					time.Sleep(10 * time.Millisecond)
 				}
 				// Leave the socket open so the test observes a stall, not an EOF.

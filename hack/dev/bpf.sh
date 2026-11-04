@@ -8,3 +8,5 @@ fi
 mkdir -p /work/out/rknetes
 clang -O2 -g -target bpf -D__TARGET_ARCH_x86 -I/usr/include/x86_64-linux-gnu \
   -c /work/src/rknetes/bpf/sovereign-16k.c -o /work/out/rknetes/sovereign-16k.o
+clang -O2 -g -target bpf -D__TARGET_ARCH_x86 -I/usr/include/x86_64-linux-gnu \
+  -c /work/src/rknetes/bpf/tspu.c -o /work/out/rknetes/tspu.o
