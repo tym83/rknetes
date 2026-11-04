@@ -4,10 +4,13 @@ go 1.26.5
 
 require (
 	github.com/cilium/cilium v1.20.4
+	github.com/cilium/ebpf v0.22.0
 	github.com/jackc/pgx/v5 v5.8.0
+	golang.org/x/sys v0.48.0
 	google.golang.org/grpc v1.83.2
 	k8s.io/apimachinery v0.37.1
 	k8s.io/client-go v0.37.1
+	k8s.io/cri-api v0.37.1
 )
 
 require (
@@ -41,7 +44,6 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/term v0.46.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
