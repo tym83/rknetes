@@ -27,7 +27,9 @@ kinds = {
                  "description": "Ограничение; Замедление; Деградация; ТехническиеПроблемы."},
     }, ["pattern", "bandwidth", "mode"])),
     "SovereignBytePolicy": ("sovereignbytepolicies", [], obj({"selector": labels, "foreignCIDRs": strings, "limit": integer})),
-    "WhitelistMode": ("whitelistmodes", [], obj({"enabled": boolean, "integrity": boolean, "capacity": integer})),
+    "WhitelistMode": ("whitelistmodes", [], obj({"enabled": boolean, "integrity": boolean, "capacity": integer,
+        "capacityMeasurement": string, "reservedEntries": integer, "periodSeconds": integer,
+        "activePercent": {"type": "integer", "minimum": 1, "maximum": 99}})),
     "SociallySignificantResource": ("sociallysignificantresources", ["socialresources"], obj({
         "serviceName": string, "selector": labels, "approved": boolean,
         "dependencies": strings, "allowedImages": strings, "allowedServiceAccounts": strings,

@@ -281,6 +281,22 @@
                   "capacity": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "capacityMeasurement": {
+                    "type": "string"
+                  },
+                  "reservedEntries": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "periodSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "activePercent": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 99
                   }
                 },
                 "required": []

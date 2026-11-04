@@ -9,6 +9,8 @@ import (
 	"rknetes.su/rknetes/pkg/cluster"
 	"slices"
 	"sort"
+	"strconv"
+	"time"
 )
 
 func (r *Controller) Whitelist(ctx context.Context, ns string) error {
@@ -33,12 +35,51 @@ func (r *Controller) Whitelist(ctx context.Context, ns string) error {
 		return err
 	}
 	sort.Slice(social, func(i, j int) bool {
+		left, right := social[i].GetCreationTimestamp(), social[j].GetCreationTimestamp()
+		if left.Equal(&right) {
+			return social[i].GetName() < social[j].GetName()
+		}
 		return social[i].GetCreationTimestamp().Time.Before(social[j].GetCreationTimestamp().Time)
 	})
 	enabled, integrity := false, false
-	for _, m := range modes {
-		enabled = enabled || cluster.Bool(m.Object, "spec", "enabled")
+	capacity := int64(0)
+	for i := range modes {
+		m := &modes[i]
+		active := cluster.Bool(m.Object, "spec", "enabled")
+		period := cluster.Int(m.Object, 0, "spec", "periodSeconds")
+		if period > 0 && (period < 10 || period > 31536000) {
+			return fmt.Errorf("whitelist period must be 10..31536000 seconds")
+		}
+		if period > 0 {
+			active = active && time.Since(m.GetCreationTimestamp().Time).Milliseconds()%(period*1000) < period*cluster.Int(m.Object, 60, "spec", "activePercent")*10
+		}
+		enabled = enabled || active
 		integrity = integrity || cluster.Bool(m.Object, "spec", "integrity")
+		if measurement := cluster.String(m.Object, "spec", "capacityMeasurement"); measurement != "" {
+			cm, err := r.C.R("configmaps", ns).Get(ctx, measurement, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			maxEntries, err := strconv.ParseInt(cluster.String(cm.Object, "data", "maxEntries"), 10, 64)
+			reserved := cluster.Int(m.Object, 0, "spec", "reservedEntries")
+			if err != nil || maxEntries <= reserved || cm.GetLabels()["rknetes.su/managed"] != "true" || cluster.String(cm.Object, "data", "kind") != "cilium-policy-map" {
+				return fmt.Errorf("invalid measured Cilium capacity")
+			}
+			available := maxEntries - reserved
+			if requested := cluster.Int(m.Object, 0, "spec", "capacity"); requested > 0 && requested < available {
+				available = requested
+			}
+			if capacity == 0 || available < capacity {
+				capacity = available
+			}
+		}
+		state := "False"
+		if active {
+			state = "True"
+		}
+		if err := r.C.Status(ctx, "whitelistmodes", m, cluster.Map{"admissionCapacity": capacity, "conditions": conditions(cluster.Condition("Active", state, "ScheduledDecision", "The admission queue is distinct from the measured kernel map"))}); err != nil {
+			return err
+		}
 	}
 	if !enabled {
 		for _, name := range []string{"whitelist", "whitelist-integrity"} {
@@ -51,9 +92,27 @@ func (r *Controller) Whitelist(ctx context.Context, ns string) error {
 	}
 	allowed := []interface{}{}
 	denied := []interface{}{}
+	approved := []string{}
+	for _, s := range social {
+		if cluster.Bool(s.Object, "spec", "approved") {
+			approved = append(approved, s.GetName())
+		}
+	}
+	evicted := map[string]bool{}
+	if capacity > 0 && int64(len(approved)) > capacity {
+		for _, name := range approved[:int64(len(approved))-capacity] {
+			evicted[name] = true
+		}
+	}
 	for i := range social {
 		s := &social[i]
 		if !cluster.Bool(s.Object, "spec", "approved") {
+			continue
+		}
+		if evicted[s.GetName()] {
+			if err := r.C.Status(ctx, "sociallysignificantresources", s, cluster.Map{"conditions": conditions(cluster.Condition("Whitelisted", "False", "AdmissionQueueCapacity", "UnderReview: the oldest approval left the admission queue; the kernel did not evict it"), cluster.Condition("ActuallyReachable", "Unknown", "DependencyGraphNotInScope", "Проверка зависимостей не входит в компетенцию ведомства"))}); err != nil {
+				return err
+			}
 			continue
 		}
 		selector := cluster.Labels(s.Object, "spec", "selector")
