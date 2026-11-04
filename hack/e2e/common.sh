@@ -9,6 +9,14 @@ esac
 export RK_TLS_DIR=${RK_TLS_DIR:-/work/tls}
 case "$RK_TLS_DIR" in /work/tls|/work/cleanroom/tls) ;; *) exit 2 ;; esac
 k() { kubectl --context admin@workshop "$@"; }
+start_lab_controller() {
+  k label namespace "$NS" rknetes.su/independent-controller=true --overwrite
+  /work/out/optional/rknet-controller --kubeconfig "$KUBECONFIG" --context admin@workshop --namespace "$NS" > "/work/tmp/controller-$NS.log" 2>&1 &
+  lab_controller=$!
+}
+stop_lab_controller() {
+  if [[ -n "${lab_controller:-}" ]]; then kill "$lab_controller" 2>/dev/null || true; wait "$lab_controller" 2>/dev/null || true; fi
+}
 start_forward() {
   local namespace=$1 resource=$2 ports=$3
   forward_log=$(mktemp /work/tmp/rknetes-forward.XXXXXX)

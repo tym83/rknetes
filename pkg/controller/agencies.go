@@ -30,7 +30,7 @@ func (r *Controller) Escrow(ctx context.Context, ns string) error {
 			return err
 		}
 	}
-	return nil
+	return r.Disclosure(ctx, ns)
 }
 func (r *Controller) Drill(ctx context.Context, ns string) error {
 	drills, err := r.C.List(ctx, "sovereigntydrills", ns)
