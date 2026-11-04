@@ -19,7 +19,7 @@ The incompatible sovereign API experiment runs separately with `hack/research/so
 
 The first-write adapter exposes one bounded HTTP write operation, not arbitrary PostgreSQL wire-protocol rewriting or atomic transactions across two databases. It uses the [pgx PostgreSQL driver](https://github.com/jackc/pgx) v5.8.0 and parameterized statements. PostgreSQL 17 is pinned to the digest measured by the test. Passwords live only in a lab Secret; logs and evidence contain no credentials. The test retains its small database directories under `/var/lib/rknetes/data-boundary/<namespace UID>` on the selected nested nodes.
 
-These replacements close their measured acceptance criteria. [BACKLOG](../BACKLOG.md) retains the independent requirements for node enrollment, protocol ladders, byte-policy attachment, archive exhaustion and the composed destructive demonstration.
+These replacements close their measured acceptance criteria. [BACKLOG](../BACKLOG.md) retains the independent requirements for node enrollment, protocol ladders, artifact/log stalls, archive exhaustion and the composed destructive demonstration.
 
 The installed `tspu` DaemonSet now reconciles SovereignBytePolicy using containerd sandbox identity and [TCX links](https://github.com/cilium/ebpf/tree/main/examples/tcx). Its program accounts for sequence wrap and retransmissions, drops whole packets that cross the limit, and permits ACKs and small health requests. Both endpoints must belong to the nested Pod range. Closing the agent closes its unpinned links, so stale filters do not survive a crashed process. [The node-agent evidence](evidence/byte-policy.tar.gz) proves CR attachment, Pod recreation and policy-deletion recovery.
 
