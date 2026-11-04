@@ -3,3 +3,8 @@ SESSION_LOG.md
 .codex-last.md
 /bin/
 /out/
+/state/
+*.kubeconfig
+*.key
+*.pem
+__pycache__/

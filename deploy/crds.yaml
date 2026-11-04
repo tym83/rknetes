@@ -1,0 +1,1179 @@
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "reestrentries.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "ReestrEntry",
+      "plural": "reestrentries",
+      "singular": "reestrentry",
+      "shortNames": [
+        "reestr"
+      ]
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "podName": {
+                    "type": "string"
+                  },
+                  "selector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "escalate": {
+                    "type": "boolean"
+                  },
+                  "nodeAfterSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "poolAfterSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "serviceAfterSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "forever": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "throttlepolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "ThrottlePolicy",
+      "plural": "throttlepolicies",
+      "singular": "throttlepolicy",
+      "shortNames": [
+        "throttle"
+      ]
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "bandwidth": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "Ограничение",
+                      "Замедление",
+                      "Деградация",
+                      "ТехническиеПроблемы"
+                    ],
+                    "description": "Ограничение; Замедление; Деградация; ТехническиеПроблемы."
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "bandwidth",
+                  "mode"
+                ]
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "sovereignbytepolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "SovereignBytePolicy",
+      "plural": "sovereignbytepolicies",
+      "singular": "sovereignbytepolicy",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "selector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "foreignCIDRs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "whitelistmodes.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "WhitelistMode",
+      "plural": "whitelistmodes",
+      "singular": "whitelistmode",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "integrity": {
+                    "type": "boolean"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "sociallysignificantresources.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "SociallySignificantResource",
+      "plural": "sociallysignificantresources",
+      "singular": "sociallysignificantresource",
+      "shortNames": [
+        "socialresources"
+      ]
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "serviceName": {
+                    "type": "string"
+                  },
+                  "selector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "approved": {
+                    "type": "boolean"
+                  },
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "allowedImages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "allowedServiceAccounts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "serviceName",
+                  "selector"
+                ]
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "tunnelprofiles.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "TunnelProfile",
+      "plural": "tunnelprofiles",
+      "singular": "tunnelprofile",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "protocolLadder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "blockedProtocols": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "compliant": {
+                    "type": "boolean"
+                  },
+                  "target": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "pigeons.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "Pigeon",
+      "plural": "pigeons",
+      "singular": "pigeon",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "claimName": {
+                    "type": "string"
+                  },
+                  "destinationNamespace": {
+                    "type": "string"
+                  },
+                  "delaySeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "lossPercent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "werewolves.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "Werewolf",
+      "plural": "werewolves",
+      "singular": "werewolf",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "selector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "port": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "address",
+                  "selector",
+                  "port"
+                ]
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "callrestrictions.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "CallRestriction",
+      "plural": "callrestrictions",
+      "singular": "callrestriction",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "foreignagentpolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "ForeignAgentPolicy",
+      "plural": "foreignagentpolicies",
+      "singular": "foreignagentpolicy",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "digests": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "rewriteImages": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "archivepolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "ArchivePolicy",
+      "plural": "archivepolicies",
+      "singular": "archivepolicy",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "claimName": {
+                    "type": "string"
+                  },
+                  "retentionDays": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "capturePayload": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "databoundarypolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "DataBoundaryPolicy",
+      "plural": "databoundarypolicies",
+      "singular": "databoundarypolicy",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "selector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "primaryService": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "sovereigntydrills.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "SovereigntyDrill",
+      "plural": "sovereigntydrills",
+      "singular": "sovereigntydrill",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "foreignSelector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "bloggerregistrations.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "BloggerRegistration",
+      "plural": "bloggerregistrations",
+      "singular": "bloggerregistration",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "resource": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "registered": {
+                    "type": "boolean"
+                  },
+                  "threshold": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "advertisingpolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "AdvertisingPolicy",
+      "plural": "advertisingpolicies",
+      "singular": "advertisingpolicy",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "coolingpolicies.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "CoolingPolicy",
+      "plural": "coolingpolicies",
+      "singular": "coolingpolicy",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "nodeName": {
+                    "type": "string"
+                  },
+                  "durationSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "captchaURL": {
+                    "type": "string"
+                  },
+                  "captchaSolved": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "nodeName"
+                ]
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
+---
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "statusstatements.rknetes.su"
+  },
+  "spec": {
+    "group": "rknetes.su",
+    "scope": "Namespaced",
+    "names": {
+      "kind": "StatusStatement",
+      "plural": "statusstatements",
+      "singular": "statusstatement",
+      "shortNames": []
+    },
+    "versions": [
+      {
+        "name": "v1alpha1",
+        "served": true,
+        "storage": true,
+        "subresources": {
+          "status": {}
+        },
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "apiVersion": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "spec": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "status": {
+                "type": "object",
+                "x-kubernetes-preserve-unknown-fields": true
+              }
+            },
+            "required": []
+          }
+        }
+      }
+    ]
+  }
+}
