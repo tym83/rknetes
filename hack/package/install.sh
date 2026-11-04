@@ -28,14 +28,13 @@ if ! /work/bin/helm status rknetes --namespace rknet-system --kube-context admin
   /work/bin/helm install rknetes "$ROOT/charts/rknetes" --namespace rknet-system --kube-context admin@workshop --skip-crds --wait --timeout 3m
 fi
 pkg() { env -u KUBERNETES_SERVICE_HOST -u KUBERNETES_SERVICE_PORT /work/out/amd64/kubepkg "$@"; }
-pkg repo add rknetes "http://$FILES:8080/packages/index.yaml" --public-key /work/keys/rknetes-index.pub --plain-http-registry "$FILES:5000" --interval 30s --priority 100
+existing=$(k get repository.kubepkg.dev/rknetes -o jsonpath='{.spec.url}' 2>/dev/null || true)
+if [[ -z "$existing" ]]; then
+  pkg repo add rknetes "http://$FILES:8080/packages/index.yaml" --public-key /work/keys/rknetes-index.pub --plain-http-registry "$FILES:5000" --interval 30s --priority 100
+elif [[ "$existing" != "http://$FILES:8080/packages/index.yaml" ]]; then
+  echo 'refusing to replace a different repository URL' >&2
+  exit 1
+fi
 k wait --for=condition=Ready repository.kubepkg.dev/rknetes --timeout=180s
 pkg install kuberoot-rknetes --yes
-k wait --for=condition=Ready package.kubepkg.dev/kuberoot-rknetes --timeout=300s
-k -n rknet-system rollout status deployment/rknet-controller --timeout=180s
-k -n rknet-system rollout status deployment/rknet-admission --timeout=180s
-k -n rknet-system rollout status deployment/watch-office --timeout=180s
-k -n rknet-system rollout status daemonset/maxlet --timeout=180s
-mkdir -p /work/evidence/package
-k get repository.kubepkg.dev/rknetes package.kubepkg.dev/kuberoot-rknetes -o yaml > /work/evidence/package/installed.yaml
-sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0.tgz > /work/evidence/package/sha256.txt
+bash /work/src/rknetes/hack/package/check.sh
