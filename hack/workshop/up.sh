@@ -32,3 +32,5 @@ builder bash /work/src/rknetes/hack/stand/bootstrap.sh install "$cp_ip" "$w1_ip"
 builder bash /work/src/rknetes/hack/stand/bootstrap.sh configure "$cp_ip" "$w1_ip" "$w2_ip"
 files_ip=$(wk get pod builder -o jsonpath='{.status.podIP}')
 builder env RK_BINARY_URL="http://$files_ip:8080/rknetes" bash /work/src/rknetes/hack/stand/install.sh
+builder bash /work/src/rknetes/hack/package/build.sh "$files_ip"
+builder bash /work/src/rknetes/hack/package/install.sh "$files_ip"
