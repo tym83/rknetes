@@ -1,0 +1,22 @@
+# Optional regulator experiments
+
+[Русская версия](experiments.ru.md)
+
+These extensions implement the replacements chosen in [owner decisions](../OWNER_DECISIONS.md). They are separate from the native bundle6 and package build3 used for the complete 462/462 conformance run. Each runs in an explicitly labelled lab namespace; the native Kubernetes API retains its normal contract. The [preserved experiment logs](evidence/optional-experiments.tar.gz) contain actual outcomes.
+
+Build them in the tenant builder with `bash /work/src/rknetes/hack/research/build.sh`. Outputs go to `/work/out/optional`; source-file hashes and Go build information go to `/work/evidence/optional-build`. Run a named test using `bash hack/e2e/run.sh UNIQUE-RUN TEST-NAME`. Tests require fresh namespaces, the installed CRDs and the dedicated nested kubeconfig. Remove completed fixtures with `hack/e2e/cleanup.sh` and explicit namespace names.
+
+| Test | Working mechanism and boundary |
+|---|---|
+| `01-telegram-cycle` | A real annual CronJob uses `0 0 18 6 *` in UTC and a six-year guard relative to 2020. Jobs with controlled years 2027 and 2026 respectively skip and apply a real 1M Cilium bandwidth annotation. Normal execution uses the actual year. Readiness reads ReestrEntry: `🛩` while its block is applied, `ok` after annotation amnesty, both HTTP 200. |
+| `08-reinvocation` | A temporary, namespace-selected mutating webhook replaces an image with itself and increments its report counter. A later agency forces one reinvocation. On v1.37.1 the Pod starts with the original image and exactly two reported substitutions; Kubernetes stops the alleged infinite loop. The temporary webhook is removed by the test. |
+| `10-presentation` | A verified client certificate and native SubjectAccessReview authorize the explicit public view. It hides the official TunnelProfile, including from the same administrator who reads it through the native API. It redacts prohibited names and logs, decorates output, and fines one explicitly managed 8-CPU namespace quota by 5000m. A real 4-CPU Pod creation is then refused. Its opt-in destructive mode returns HTTP 451 even for discovery; an ordinary native API edit restores the gateway. |
+| `09-first-write` | A DataBoundaryPolicy selects an application StatefulSet and its domestic PostgreSQL primary Service. The HTTP adapter commits with synchronous_commit enabled before attempting a separate replica transaction. Data survives primary Pod recreation on its fixed lab volume. A whitelist excluding the primary prevents any replica write while application readiness stays green. A replica-only outage leaves an acknowledged primary commit; retrying the same id completes replication without duplicate rows. |
+
+The log/presentation gateway uses exactly 24 uppercase words and duplicates each Unicode character. With redaction enabled, the measured 200-line sample grew from 2,800 to 152,600 bytes, a factor of 54.5. Allocated file storage grew from 4,096 to 155,648 bytes. These are measured file sizes; no Loki failure is claimed. API presentation uses a JSON envelope containing the disclaimer and object, so it never prefixes invalid text to native Kubernetes JSON.
+
+The incompatible sovereign API experiment runs separately with `hack/research/sovereign-api.sh`. It copies the pinned upstream apimachinery module, renames `pkg/apis/meta/v1` to `pkg/apis/zapreshchyonnaya-v-rf/v1`, and rewrites 114 Go files in that copy. The new package passes its tests and a migrated consumer builds. An unchanged upstream import fails with “does not contain package”. The conformant upstream checkout remains intact.
+
+The first-write adapter exposes one bounded HTTP write operation, not arbitrary PostgreSQL wire-protocol rewriting or atomic transactions across two databases. It uses the [pgx PostgreSQL driver](https://github.com/jackc/pgx) v5.8.0 and parameterized statements. PostgreSQL 17 is pinned to the digest measured by the test. Passwords live only in a lab Secret; logs and evidence contain no credentials. The test retains its small database directories under `/var/lib/rknetes/data-boundary/<namespace UID>` on the selected nested nodes.
+
+These replacements close their measured acceptance criteria. [BACKLOG](../BACKLOG.md) retains the independent requirements for node enrollment, protocol ladders, byte-policy attachment, archive exhaustion and the composed destructive demonstration.

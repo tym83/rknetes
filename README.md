@@ -25,3 +25,5 @@ hack/dev/build.sh
 The reproducible lab tour is `hack/demo.sh`, executed inside the builder. It requires fresh lab namespaces and records each assertion separately. Upstream conformance uses `hack/conformance/run.sh`; the satirical [domestic conformance report](docs/domestic-conformance.md) is a different document. The exact upstream result belongs in the evidence report, never in a constant or a fabricated dashboard.
 
 RKNetes code is Apache-2.0. Bundled Kubernetes, Linux, Cilium and other components retain their respective licences. `SESSION_LOG.md` is an ignored operational handover; credentials and signing keys stay outside the repository.
+
+The validated native profile passed **462/462 upstream conformance** and **21/21 demo checks**. [Optional experiments](docs/experiments.md) document further mechanisms and their boundaries; remaining specification requirements stay explicit in BACKLOG.
