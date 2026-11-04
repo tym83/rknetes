@@ -13,3 +13,5 @@ The governing starting point is Government Decree No. 1236 of 16 November 2015. 
 Research record, 2026-11-04: the official catalogue was available in indexed search excerpts; direct document downloads timed out. A complete current consolidated text, including [the indexed amendment No. 1007 of 13 August 2026](https://www.consultant.ru/document/cons_doc_LAW_189116/92d969e26a4326c5d02fa79b8f9cf4994ee5633b/), has therefore not been verified. Before filing, the responsible legal reviewer must attach the retrieved current text, its effective date and an applicability table. This unresolved source verification is tracked in `BACKLOG.md`; this template is not labelled ready to submit.
 
 No account was used, no application was signed, and nothing was submitted or published.
+
+[Current-rules review and template scope](rules-review.md) records the repeated source check on 2026-11-04. B30 is complete within the approved template scope; primary-text verification before any future filing remains the applicant’s responsibility.

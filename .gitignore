@@ -1,6 +1,7 @@
 SESSION_LOG.md
 .codex-run.log
 .codex-last.md
+.codex-last-*.md
 /bin/
 /out/
 /state/
