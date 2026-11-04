@@ -6,7 +6,9 @@ cd /work/src/rknetes
 [[ -f /work/kube/rknetes.conf ]] || exit 2
 mkdir -p /work/out/optional /work/evidence/optional-build
 GOMAXPROCS=4 go test -p 4 ./...
-for name in presentation-office substitution-office telegram-office first-write watch-audience; do
+for source in cmd/*/main.go; do
+  name=${source#cmd/}
+  name=${name%/main.go}
   CGO_ENABLED=0 GOMAXPROCS=4 go build -p 4 -trimpath -o "/work/out/optional/$name" "./cmd/$name"
   go version -m "/work/out/optional/$name" > "/work/evidence/optional-build/$name.build-info.txt"
 done

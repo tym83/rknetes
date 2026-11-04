@@ -519,6 +519,9 @@
                   "claimName": {
                     "type": "string"
                   },
+                  "nodeName": {
+                    "type": "string"
+                  },
                   "destinationNamespace": {
                     "type": "string"
                   },

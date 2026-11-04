@@ -35,7 +35,7 @@ kinds = {
         "dependencies": strings, "allowedImages": strings, "allowedServiceAccounts": strings,
     }, ["serviceName", "selector"])),
     "TunnelProfile": ("tunnelprofiles", [], obj({"protocolLadder": strings, "blockedProtocols": strings, "compliant": boolean, "target": string})),
-    "Pigeon": ("pigeons", [], obj({"claimName": string, "destinationNamespace": string, "delaySeconds": integer, "lossPercent": {"type": "integer", "minimum": 0, "maximum": 100}})),
+    "Pigeon": ("pigeons", [], obj({"claimName": string, "nodeName": string, "destinationNamespace": string, "delaySeconds": integer, "lossPercent": {"type": "integer", "minimum": 0, "maximum": 100}})),
     "Werewolf": ("werewolves", [], obj({"address": string, "selector": labels, "port": integer}, ["address", "selector", "port"])),
     "CallRestriction": ("callrestrictions", [], obj({"enabled": boolean})),
     "ForeignAgentPolicy": ("foreignagentpolicies", [], obj({"enabled": boolean, "digests": strings, "rewriteImages": labels})),
