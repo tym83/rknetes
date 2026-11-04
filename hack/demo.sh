@@ -12,7 +12,7 @@ bash hack/e2e/run.sh "$RUN" \
   01-reestr 01-self-block 05-pigeon 06-calls 06-max \
   09-escrow-forever 10-drill 11-erid 11-blogger 12-cooling
 export KUBECONFIG=/work/kube/rknetes.conf
-/work/out/rknetes/rknetesctl --kubeconfig "$KUBECONFIG" -n lab-whitelist why gosuslugi
+/work/out/rknetes/rknetesctl --kubeconfig "$KUBECONFIG" -n lab-whitelist why gosuslugi | tee "/work/evidence/$RUN/why.txt"
 /work/bin/kubectl --context admin@workshop -n lab-whitelist apply -f - <<'YAML'
 apiVersion: rknetes.su/v1alpha1
 kind: StatusStatement
@@ -20,5 +20,5 @@ metadata: {name: official}
 spec: {subject: shop}
 YAML
 sleep 5
-/work/bin/kubectl --context admin@workshop -n lab-whitelist get statusstatement official -o jsonpath='{.status.text}'
+/work/bin/kubectl --context admin@workshop -n lab-whitelist get statusstatement official -o jsonpath='{.status.text}' | tee "/work/evidence/$RUN/statement.txt"
 echo

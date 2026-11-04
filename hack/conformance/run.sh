@@ -12,9 +12,11 @@ k get nodes -o wide > "$DIR/nodes.txt"
 k get namespace -L rknetes.su/lab > "$DIR/namespaces.txt"
 k -n rknet-system get deployments,daemonsets -o wide > "$DIR/addons.txt"
 k -n kube-system get cm cilium-config -o yaml > "$DIR/cilium-config.yaml"
-if ! command -v hydrophone >/dev/null; then GOBIN=/work/bin go install sigs.k8s.io/hydrophone@v0.5.0; fi
+if [[ ! -x /work/bin/hydrophone-rknetes ]]; then bash "$(dirname "$0")/build-runner.sh"; fi
 set +e
-hydrophone --kubeconfig "$KUBECONFIG" --conformance --parallel 8 \
+# Hydrophone v0.5.0 prefers InClusterConfig even when --kubeconfig is supplied.
+# Remove discovery env so the outer builder ServiceAccount is never selected.
+env -u KUBERNETES_SERVICE_HOST -u KUBERNETES_SERVICE_PORT hydrophone-rknetes --kubeconfig "$KUBECONFIG" --conformance --parallel 8 \
   --conformance-image registry.k8s.io/conformance:v1.37.1 \
   --namespace rknet-conformance --output-dir "$DIR" 2>&1 | tee "$DIR/driver.log"
 code=${PIPESTATUS[0]}
