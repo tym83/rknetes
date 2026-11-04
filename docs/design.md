@@ -1,0 +1,25 @@
+# Design and experimental boundaries
+
+[Русская версия](design.ru.md)
+
+The base is kuberoot revision `ee4bf243ea9b81e2c94799c2c82df3792ba74c31`. The derived edge profile changes executable paths without replacing Kubernetes scheduling, kubelet or API semantics. Kubernetes v1.37.1 is patched in two places: human-readable kubectl version prefixes and the Pod discovery short names. Version linker flags record upstream commit `f78e722310e50bcaca9276be22276d9e91d91308` and the truthful `dirty` tree state. The rebranding script preserves copyright, LICENSE and NOTICE files.
+
+The API group is `rknetes.su/v1alpha1`. Seventeen structural CRDs declare the vocabulary. Their existence alone is not a functional claim: the evidence matrix names actual reconciled mechanisms, and BACKLOG names schema-only interfaces.
+
+`rknet-controller` scans namespaces labelled `rknetes.su/lab=true`. It retains original Pod UID and IP history in ReestrEntry status, writes Cilium deny policies, observes IP inheritance, adds `BornBlocked`, and honours the terrorism-cooperation annotation. Escalation uses the observed node CIDR, nested Pod pool, and an explicitly requested API-Service stage. A separate controller instance demonstrates self-cutoff; recovery uses the guest API address outside the blocked Service route.
+
+ThrottlePolicy applies the real Cilium bandwidth annotation after regular-expression matching. WhitelistMode installs a default-deny egress policy with approved endpoint selectors and a DNS exception. Integrity checks inspect ServiceAccounts, image references, ephemeral containers, EndpointSlices and externalIPs. A violation removes the whole approved destination from service. The CLI dependency tree follows declared SociallySignificantResource dependencies; it does not pretend those declarations are captured traffic.
+
+The 16 KiB fixture attaches a real tc egress program inside the selected Pod's network namespace. It counts sequence-relative TCP payload, preserves ACKs, and drops data beyond 16,384 bytes. Its current transport boundary is source port 8081 and destination `10.42.0.0/16`; it does not filter external registries. The tested small-chunk stream reaches exactly 16 KiB. Retransmissions are not charged twice. General packet-boundary handling and CR-driven attachment are explicit backlog items.
+
+Admission has 17 validating hooks and one mutating hook. CONNECT checks cover exec, attach and port-forward; the MAX ServiceAccount is the explicit relay exception. The caller's client certificate and SubjectAccessReview still authorize MAX access. Maxlet proxies real upgraded streams and records bytes on both sides in node-local JSONL files. Its archive is not represented as a cluster-wide six-month traffic archive.
+
+The foreign-origin webhook detects registry names and explicitly supplied foreign digests. The event webhook rejects successful Events without erid. The watch-office gateway counts active, individually selected ConfigMap watch requests and closes them when an unregistered object's threshold is crossed. It returns HTTP 451, records the observed count and permits registered watches. The default threshold is 10,000; the automated mechanism test uses three. Direct API access remains separate from this explicit gateway.
+
+Pigeon moves complete IPv4/UDP datagram files through a shared node-local spool mounted by claims in two namespaces. Each packet waits 180 seconds; a random draw loses 55% on average. It is a storage carrier, not a kernel TUN device. The test verifies checksums and unchanged payload under an all-network deny policy. Persistent packet evidence uses a namespace-UID-specific directory.
+
+TLS escrow copies actual Secret bytes to `sorm`. Forever finalizers retain terminating Pods. Cooling applies NoExecute only to explicitly selected lab nodes and removes it after the configured duration or recorded captcha completion. SovereigntyDrill cuts selected foreign lab endpoints while its official status remains successful. Goshran's HTTP service returns OCI blob redirects and an unchanged Helm index with absolute foreign URLs; the fixed availability metric is intentionally labelled official.
+
+The conformance profile keeps the native Kubernetes processes and installed agency add-ons, with no lab namespace labels or active lab policy objects. This preserves the actual Kubernetes API and avoids injecting failures into conformance namespaces. A successful profile run cannot establish correctness for an actively destructive lab profile.
+
+Some concept claims contradict Kubernetes itself. Validating hooks execute in parallel, as the [upstream admission guidance](https://kubernetes.io/docs/concepts/cluster-administration/admission-webhooks-good-practices/) explains and the stand measures. Kubernetes does not give a CronJob an absent schedule, a sidecar control over another process's stdout, or RBAC a hidden-object exception for an unrestricted administrator. BACKLOG records each required replacement and its acceptance condition. The original concept remains unchanged while the owner's editorial decision is pending.
