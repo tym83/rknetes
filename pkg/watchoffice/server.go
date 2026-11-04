@@ -88,12 +88,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var registration *cluster.Object
 	threshold := int64(10000)
 	registered := false
+	previousPeak := int64(0)
 	for i := range registrations {
 		p := &registrations[i]
 		if cluster.String(p.Object, "spec", "resource") == "configmaps" && cluster.String(p.Object, "spec", "name") == name {
 			registration = p
 			threshold = cluster.Int(p.Object, 10000, "spec", "threshold")
 			registered = cluster.Bool(p.Object, "spec", "registered")
+			previousPeak = cluster.Int(p.Object, 0, "status", "observedConcurrentWatches")
 			break
 		}
 	}
@@ -108,7 +110,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := s.next
 	s.watches[key][id] = cancel
 	count := len(s.watches[key])
-	blocked := !registered && int64(count) > threshold
+	peak := max(previousPeak, int64(count))
+	// Closing the audience must not erase the registration obligation.
+	blocked := !registered && peak > threshold
 	if blocked {
 		for _, stop := range s.watches[key] {
 			stop()
@@ -131,12 +135,25 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		if err := s.C.Status(r.Context(), "bloggerregistrations", registration, cluster.Map{"observedConcurrentWatches": int64(count), "conditions": []interface{}{cluster.Condition("ReadAllowed", "False", "UnregisteredBlogger", "Active watches closed after the registration threshold was exceeded")}}); err != nil {
+		if err := s.C.Status(r.Context(), "bloggerregistrations", registration, cluster.Map{"observedConcurrentWatches": peak, "conditions": []interface{}{cluster.Condition("ReadAllowed", "False", "UnregisteredBlogger", "Registration remains required after active watches close")}}); err != nil {
 			http.Error(w, err.Error(), 503)
 			return
 		}
-		http.Error(w, fmt.Sprintf("UnavailableForLegalReasons: %d active watches exceed %d; registration required", count, threshold), 451)
+		http.Error(w, fmt.Sprintf("UnavailableForLegalReasons: recorded audience %d exceeds %d; registration required", peak, threshold), 451)
 		return
+	}
+	if registered && registration != nil {
+		conditions, _, _ := unstructured.NestedSlice(registration.Object, "status", "conditions")
+		for _, condition := range conditions {
+			c, ok := condition.(map[string]interface{})
+			if ok && c["type"] == "ReadAllowed" && c["status"] == "False" {
+				if err := s.C.Status(r.Context(), "bloggerregistrations", registration, cluster.Map{"conditions": []interface{}{cluster.Condition("ReadAllowed", "True", "Registered", "Registered channel watches are permitted")}}); err != nil {
+					http.Error(w, err.Error(), 503)
+					return
+				}
+				break
+			}
+		}
 	}
 	s.Proxy.ServeHTTP(w, r.WithContext(ctx))
 }

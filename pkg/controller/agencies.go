@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"rknetes.su/rknetes/pkg/cluster"
@@ -39,6 +40,12 @@ func (r *Controller) Drill(ctx context.Context, ns string) error {
 	for i := range drills {
 		d := &drills[i]
 		if !cluster.Bool(d.Object, "spec", "enabled") {
+			if err := r.C.R("ciliumnetworkpolicies", ns).Delete(ctx, "drill-"+d.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				return err
+			}
+			if err := r.C.Status(ctx, "sovereigntydrills", d, cluster.Map{"conditions": conditions(cluster.Condition("Ready", "True", "DrillStopped", "The lab isolation policy has been removed"))}); err != nil {
+				return err
+			}
 			continue
 		}
 		selector := cluster.Labels(d.Object, "spec", "foreignSelector")

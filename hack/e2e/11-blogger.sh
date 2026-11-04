@@ -38,12 +38,18 @@ try:
         r=watch();assert r.status==200,r.read()
         assert b'"type":"ADDED"' in r.readline()
     r=watch();assert r.status==451,(r.status,r.read())
-    assert b'4 active watches exceed 3' in r.read()
+    assert b'recorded audience 4 exceeds 3' in r.read()
+    for c in connections: c.close()
+    connections.clear()
+    time.sleep(2)
+    r=watch();assert r.status==451,(r.status,r.read())
+    assert b'recorded audience 4 exceeds 3' in r.read()
     subprocess.run(['kubectl','--context','admin@workshop','-n','lab-blogger','patch','bloggerregistration','channel','--type','merge','-p','{"spec":{"registered":true}}'],check=True)
     r=watch();assert r.status==200,r.read()
     assert b'"type":"ADDED"' in r.readline()
-    print('PASS: four real concurrent watches crossed the threshold; HTTP 451 until registration; registered watch resumed')
+    print('PASS: four real concurrent watches crossed the threshold; reopening after all watches closed still received 451; registration restored watch and ReadAllowed')
 finally:
     for c in connections:c.close()
 PY
 k -n "$NS" get bloggerregistration channel -o jsonpath='{.status.observedConcurrentWatches}' | grep '^4$'
+k -n "$NS" wait --for=condition=ReadAllowed bloggerregistration/channel --timeout=30s

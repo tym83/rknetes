@@ -15,4 +15,6 @@ spec: {enabled: true, foreignSelector: {app: foreign}}
 YAML
 k -n "$NS" wait --for=condition=Ready sovereigntydrill/quarterly --timeout=60s
 wait_until assert_blocked "http://$IP:8080"
-echo 'PASS: a lab foreign service is unreachable while the drill reports success'
+k -n "$NS" patch sovereigntydrill quarterly --type merge -p '{"spec":{"enabled":false}}'
+wait_until probe "http://$IP:8080"
+echo 'PASS: a lab foreign service is unreachable during the successful drill; disabling it restores packet delivery'
