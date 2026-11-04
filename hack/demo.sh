@@ -7,8 +7,8 @@ echo 'RKNetes: Сбоев не зафиксировано. The following scenes 
 # A clean set of lab namespaces is required; cleanup is explicit and never
 # modifies a workshop tenant, shared cluster component or non-lab namespace.
 bash hack/e2e/run.sh "$RUN" \
-  08-import 08-goshran 07-origin 17-agencies \
-  03-sovereign-16k 02-throttle 04-whitelist 04-ephemeral 04-werewolf \
+  08-import 08-goshran 01-escalation 07-origin 17-agencies \
+  03-sovereign-16k 02-throttle 04-whitelist 04-observe 04-ephemeral 04-werewolf \
   01-reestr 01-self-block 05-pigeon 06-calls 06-max \
   09-escrow-forever 10-drill 11-erid 11-blogger 12-cooling
 export KUBECONFIG=/work/kube/rknetes.conf

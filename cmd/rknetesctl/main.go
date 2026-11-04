@@ -9,6 +9,7 @@ import (
 	"os"
 	"rknetes.su/rknetes/pkg/cluster"
 	"rknetes.su/rknetes/pkg/controller"
+	"rknetes.su/rknetes/pkg/flows"
 	"strings"
 )
 
@@ -21,6 +22,7 @@ func main() {
 func run() error {
 	kubeconfig := flag.String("kubeconfig", os.Getenv("KUBECONFIG"), "nested cluster kubeconfig")
 	contextName := flag.String("context", "admin@workshop", "kubeconfig context")
+	hubble := flag.String("hubble", "", "trusted Hubble Relay port-forward address, e.g. 127.0.0.1:14245")
 	namespace := flag.String("n", "default", "namespace")
 	flag.Parse()
 	args := flag.Args()
@@ -66,7 +68,14 @@ func run() error {
 		fmt.Printf("%s: внесён в реестр\n", name)
 		return nil
 	case "why":
-		return why(ctx, c, *namespace, name, map[string]bool{}, "")
+		fmt.Println("Declared dependencies and controller decisions (reachability is not implied):")
+		if err := why(ctx, c, *namespace, name, map[string]bool{}, ""); err != nil {
+			return err
+		}
+		if *hubble != "" {
+			return flows.PrintNamespace(ctx, *hubble, *namespace, os.Stdout)
+		}
+		return nil
 	case "publication":
 		if len(args) != 3 || args[1] != "inspect" {
 			return fmt.Errorf("usage: publication inspect NAME")
