@@ -6,6 +6,7 @@ NS=lab-pigeon-source
 new_namespace "$NS"
 new_namespace lab-pigeon-destination
 k label namespace "$NS" lab-pigeon-destination pod-security.kubernetes.io/enforce=privileged
+SPOOL=$(k get namespace "$NS" -o jsonpath='{.metadata.uid}')
 NODE=$(k get nodes -o jsonpath='{.items[0].metadata.name}')
 for side in source destination; do
 k apply -f - <<YAML
@@ -17,7 +18,7 @@ spec:
   accessModes: [ReadWriteMany]
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ''
-  hostPath: {path: /var/lib/rknetes/pigeon-spool, type: DirectoryOrCreate}
+  hostPath: {path: /var/lib/rknetes/pigeon-spool/$SPOOL, type: DirectoryOrCreate}
   nodeAffinity:
     required:
       nodeSelectorTerms:
