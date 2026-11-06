@@ -8,6 +8,9 @@ shift
 OUT=/work/evidence/$RUN
 mkdir -p /work/evidence
 mkdir "$OUT"
+find cmd pkg hack deploy distro -type f ! -path '*/__pycache__/*' -print0 | sort -z | xargs -0 sha256sum > "$OUT/source-files.sha256"
+sha256sum go.mod go.sum >> "$OUT/source-files.sha256"
+date -u +%FT%TZ > "$OUT/started.txt"
 result=0
 for test in "$@"; do
   [[ "$test" =~ ^[0-9][0-9]-[a-z0-9-]+$ ]] || exit 2
@@ -17,4 +20,5 @@ for test in "$@"; do
   printf '%s: exit=%s\n' "$test" "$code"
   if [[ "$code" != 0 ]]; then tail -n 5 "$OUT/$test.log"; result=1; fi
 done
+date -u +%FT%TZ > "$OUT/finished.txt"
 exit "$result"

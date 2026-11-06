@@ -33,10 +33,19 @@ k -n "$NS" patch whitelistmode mobile --type merge -p '{"spec":{"enabled":false}
 wait_until probe "http://$IP:8080"
 NODE=$(k get nodes -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[1].metadata.name}')
 NS_UID=$(k get namespace "$NS" -o jsonpath='{.metadata.uid}')
+OLD_LAB=$(k get node "$NODE" -o jsonpath='{.metadata.labels.rknetes\.su/lab}')
+OLD_OWNER=$(k get node "$NODE" -o jsonpath='{.metadata.annotations.rknetes\.su/home-policy}')
 k label node "$NODE" rknetes.su/lab=true --overwrite
 k annotate node "$NODE" rknetes.su/home-policy="$NS_UID" --overwrite
 k taint node "$NODE" rknetes.su/whitelist-not-planned:NoSchedule
-trap 'k taint node "$NODE" rknetes.su/whitelist-not-planned- || true; k annotate node "$NODE" rknetes.su/home-policy- || true; k delete clusterrolebinding/rknet-home-office clusterrole/rknet-home-office --ignore-not-found; stop_lab_controller' EXIT
+restore() {
+ k taint node "$NODE" rknetes.su/whitelist-not-planned- || true
+ if [[ -n "$OLD_OWNER" ]]; then k annotate node "$NODE" rknetes.su/home-policy="$OLD_OWNER" --overwrite; else k annotate node "$NODE" rknetes.su/home-policy- || true; fi
+ if [[ -n "$OLD_LAB" ]]; then k label node "$NODE" rknetes.su/lab="$OLD_LAB" --overwrite; else k label node "$NODE" rknetes.su/lab-; fi
+ k delete clusterrolebinding/rknet-home-office clusterrole/rknet-home-office --ignore-not-found
+ stop_lab_controller
+}
+trap restore EXIT
 k -n "$NS" run home-user --image=busybox:1.37 --overrides="{\"spec\":{\"nodeName\":\"$NODE\"}}" --command -- sleep 3600
 k -n "$NS" wait --for=condition=Ready pod/home-user --timeout=120s
 SHA=$(sha256sum /work/out/optional/home-office | cut -d' ' -f1)

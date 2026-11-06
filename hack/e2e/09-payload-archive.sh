@@ -116,18 +116,33 @@ spec:
   volumes: [{name: bin, emptyDir: {}}, {name: scripts, configMap: {name: scripts}}, {name: disk, emptyDir: {sizeLimit: 300Mi}}]
 YAML
 k -n "$NS" wait --for=condition=Ready pod/control-plane --timeout=120s
-api(){ k -n "$NS" exec control-plane -- curl -ksS --cert /tmp/cp/tls.crt --key /tmp/cp/tls.key --max-time 8 "$@"; }
-ready(){ [[ "$(api https://127.0.0.1:6444/readyz 2>/dev/null)" == ok ]]; }
-wait_until ready
+recovery_exec(){
+ if [[ "${RK_ARCHIVE_MAX:-}" == 1 ]]; then hodatay --context admin@workshop --tls-server-name="${RK_MAX_TLS_SERVER_NAME:?}" -n "$NS" max exec "$@"; else k -n "$NS" exec "$@"; fi
+}
+api(){ recovery_exec control-plane -- curl -ksS --cert /tmp/cp/tls.crt --key /tmp/cp/tls.key --max-time 8 "$@"; }
+ready(){ [[ "$(api https://127.0.0.1:6444/readyz 2>/work/tmp/archive-ready.error)" == ok ]]; }
+# Wait before opening the first upgraded MAX stream; the ordinary call route
+# is still allowed here. Subsequent storage repair uses MAX under CallRestriction.
+initial_ready(){ [[ "$(k -n "$NS" exec control-plane -- curl -ksS --cert /tmp/cp/tls.crt --key /tmp/cp/tls.key --max-time 8 https://127.0.0.1:6444/readyz 2>/work/tmp/archive-ready.error)" == ok ]]; }
+wait_until initial_ready || { cat /work/tmp/archive-ready.error >&2; exit 1; }
 api -X POST -H 'Content-Type: application/json' -d '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"before","namespace":"default"},"data":{"proof":"persisted-before-disk-full"}}' https://127.0.0.1:6444/api/v1/namespaces/default/configmaps | python3 -c 'import json,sys;assert json.load(sys.stdin)["metadata"]["name"]=="before";print("PASS: disposable API wrote etcd before capture filled disk")'
 CONTROL=$(k -n "$NS" get pod control-plane -o jsonpath='{.status.podIP}')
 k -n "$NS" exec client -- sh -c "nohup python3 -c 'import socket,time;s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);end=time.time()+90;data=b\"RKARCHIVE disk pressure \"*50
-while time.time()<end:s.sendto(data,(\"$CONTROL\",8081));time.sleep(0.0001)' >/tmp/sender.log 2>&1 </dev/null &"
+while time.time()<end:s.sendto(data,(\"$CONTROL\",8081));time.sleep(0.0001)' >/tmp/sender.log 2>&1 </dev/null & echo \$! >/tmp/sender.pid"
 full(){ [[ "$(k -n "$NS" get archivepolicy full-disk -o jsonpath='{.status.conditions[0].reason}')" == StorageExhausted ]]; }
 wait_until full
-k -n "$NS" exec client -- pkill -f 'RKARCHIVE disk pressure' || true
+k -n "$NS" exec client -- sh -c 'kill "$(cat /tmp/sender.pid)"' || true
 k -n "$NS" exec control-plane -- sh -c 'df -B1 /disk; du -sb /disk/archive /disk/etcd; tail -3 /tmp/archive.log; kill $(cat /tmp/archive.pid)'
-k -n "$NS" exec -i control-plane -- python3 - <<'PYTEST'
+if [[ "${RK_ARCHIVE_MAX:-}" == 1 ]]; then
+ k -n "$NS" apply -f - <<'YAML'
+apiVersion: rknetes.su/v1alpha1
+kind: CallRestriction
+metadata: {name: calls}
+spec: {enabled: true}
+YAML
+ if k -n "$NS" exec control-plane -- echo unauthorized-call; then exit 1; fi
+fi
+recovery_exec -i control-plane -- python3 - <<'PYTEST'
 import json,ssl,urllib.request,urllib.error
 context=ssl.create_default_context(cafile='/tmp/cp/tls.crt');context.load_cert_chain('/tmp/cp/tls.crt','/tmp/cp/tls.key')
 for i in range(64):
@@ -139,8 +154,9 @@ for i in range(64):
   print('PASS: real disposable API write failed on shared full filesystem after',i,'completed writes:',type(error).__name__);break
 else:raise AssertionError('all bounded API writes succeeded despite the full filesystem')
 PYTEST
-k -n "$NS" exec control-plane -- sh -c 'grep -q "no space left on device" /tmp/etcd.log'
-k -n "$NS" exec control-plane -- sh -c 'tail -12 /tmp/etcd.log; rm -f /disk/archive/*.pcap /disk/archive/*.jsonl; kill $(cat /tmp/etcd.pid) 2>/dev/null || true; sleep 2; nohup etcd --data-dir=/disk/etcd --listen-client-urls=http://127.0.0.1:2379 --advertise-client-urls=http://127.0.0.1:2379 --listen-peer-urls=http://127.0.0.1:2380 --initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster=default=http://127.0.0.1:2380 --quota-backend-bytes=1073741824 --max-wals=1 >/tmp/etcd-recovery.log 2>&1 </dev/null &'
+recovery_exec control-plane -- sh -c 'grep -q "no space left on device" /tmp/etcd.log'
+if [[ "${RK_ARCHIVE_RECOVERY_HOOK:-}" == composed-shop ]]; then bash hack/fixtures/composed-recovery.sh; fi
+recovery_exec control-plane -- sh -c 'tail -12 /tmp/etcd.log; rm -f /disk/archive/*.pcap /disk/archive/*.jsonl; kill $(cat /tmp/etcd.pid) 2>/dev/null || true; sleep 2; nohup etcd --data-dir=/disk/etcd --listen-client-urls=http://127.0.0.1:2379 --advertise-client-urls=http://127.0.0.1:2379 --listen-peer-urls=http://127.0.0.1:2380 --initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster=default=http://127.0.0.1:2380 --quota-backend-bytes=1073741824 --max-wals=1 >/tmp/etcd-recovery.log 2>&1 </dev/null &'
 wait_until ready
 api https://127.0.0.1:6444/api/v1/namespaces/default/configmaps/before | python3 -c 'import json,sys;assert json.load(sys.stdin)["data"]["proof"]=="persisted-before-disk-full"'
 api -X POST -H 'Content-Type: application/json' -d '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"recovered","namespace":"default"},"data":{"proof":"after"}}' https://127.0.0.1:6444/api/v1/namespaces/default/configmaps | python3 -c 'import json,sys;assert json.load(sys.stdin)["metadata"]["name"]=="recovered";print("PASS: disk recovery preserved original etcd data and accepted a new native API write")'

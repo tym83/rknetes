@@ -11,7 +11,9 @@ case "$RK_TLS_DIR" in /work/tls|/work/cleanroom/tls) ;; *) exit 2 ;; esac
 k() { kubectl --context admin@workshop "$@"; }
 start_lab_controller() {
   k label namespace "$NS" rknetes.su/independent-controller=true --overwrite
-  /work/out/optional/rknet-controller --kubeconfig "$KUBECONFIG" --context admin@workshop --namespace "$NS" > "/work/tmp/controller-$NS.log" 2>&1 &
+  local metrics=()
+  if [[ -n "${RK_LAB_METRICS_LISTEN:-}" ]]; then metrics=(--metrics-listen "$RK_LAB_METRICS_LISTEN"); fi
+  /work/out/optional/rknet-controller --kubeconfig "$KUBECONFIG" --context admin@workshop --namespace "$NS" "${metrics[@]}" > "/work/tmp/controller-$NS.log" 2>&1 &
   lab_controller=$!
 }
 stop_lab_controller() {
@@ -20,7 +22,7 @@ stop_lab_controller() {
 start_forward() {
   local namespace=$1 resource=$2 ports=$3
   forward_log=$(mktemp /work/tmp/rknetes-forward.XXXXXX)
-  kubectl --context admin@workshop -n "$namespace" port-forward "$resource" "$ports" > "$forward_log" 2>&1 &
+  python3 /work/src/rknetes/hack/e2e/forward.py kubectl --context admin@workshop -n "$namespace" port-forward "$resource" "$ports" > "$forward_log" 2>&1 &
   forward=$!
   for _ in $(seq 1 20); do
     if ! kill -0 "$forward" 2>/dev/null; then cat "$forward_log" >&2; stop_forward; return 1; fi
