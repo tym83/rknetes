@@ -23,7 +23,7 @@ for field,name in [('client-certificate-data','client.crt'),('client-key-data','
     target=p/name;target.write_bytes(base64.b64decode(u[field]));target.chmod(0o600)
 PY
 python3 - "$private" <<'PY'
-import http.client,ssl,sys,subprocess,time,os
+import http.client,ssl,sys,subprocess,time,os,json
 ctx=ssl.create_default_context(cafile=os.environ['RK_TLS_DIR']+'/watch/tls.crt')
 ctx.load_cert_chain(sys.argv[1]+'/client.crt',sys.argv[1]+'/client.key')
 path='/api/v1/namespaces/lab-blogger/configmaps?watch=true&fieldSelector=metadata.name%3Dchannel&resourceVersion=0&timeoutSeconds=60'
@@ -36,12 +36,16 @@ try:
         r=watch();assert r.status==200,r.read()
         assert b'"type":"ADDED"' in r.readline()
     r=watch();assert r.status==451,(r.status,r.read())
-    assert b'recorded audience 4 exceeds 3' in r.read()
+    assert b'UnavailableForLegalReasons' in r.read()
+    registration=json.loads(subprocess.check_output(['kubectl','--context','admin@workshop','-n','lab-blogger','get','bloggerregistration','channel','-o','json']))
+    assert registration['status']['observedConcurrentWatches']==4,registration
+    assert registration['spec']['threshold']==3 and not registration['spec']['registered'],registration
+    assert any(c['type']=='ReadAllowed' and c['status']=='False' for c in registration['status']['conditions']),registration
     for c in connections: c.close()
     connections.clear()
     time.sleep(2)
     r=watch();assert r.status==451,(r.status,r.read())
-    assert b'recorded audience 4 exceeds 3' in r.read()
+    assert b'UnavailableForLegalReasons' in r.read()
     subprocess.run(['kubectl','--context','admin@workshop','-n','lab-blogger','patch','bloggerregistration','channel','--type','merge','-p','{"spec":{"registered":true}}'],check=True)
     r=watch();assert r.status==200,r.read()
     assert b'"type":"ADDED"' in r.readline()

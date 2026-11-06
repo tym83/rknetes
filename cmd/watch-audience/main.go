@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"rknetes.su/rknetes/pkg/cluster"
 )
@@ -121,8 +122,15 @@ func run() error {
 	}
 	body, _ := io.ReadAll(io.LimitReader(response.Body, 4096))
 	_ = response.Body.Close()
-	if response.StatusCode != 451 || !strings.Contains(string(body), "recorded audience 10001 exceeds 10000") {
+	if response.StatusCode != 451 || !strings.Contains(string(body), "UnavailableForLegalReasons") {
 		return fmt.Errorf("10001st watch returned %d: %s", response.StatusCode, body)
+	}
+	registration, err := c.R("bloggerregistrations", *ns).Get(ctx, "kube-root-ca.crt", metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if cluster.Int(registration.Object, 0, "status", "observedConcurrentWatches") != 10001 || cluster.Int(registration.Object, 0, "spec", "threshold") != 10000 || cluster.Bool(registration.Object, "spec", "registered") {
+		return fmt.Errorf("threshold denial did not persist the measured unregistered audience: %v", registration.Object["status"])
 	}
 	fmt.Printf("PASS: 10000 live watches received actual ADDED events; watch 10001 returned %d: %s", response.StatusCode, body)
 	if err := c.Patch(ctx, "bloggerregistrations", *ns, "kube-root-ca.crt", cluster.Map{"spec": cluster.Map{"registered": true}}); err != nil {

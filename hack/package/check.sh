@@ -45,4 +45,4 @@ evidence=${RK_PACKAGE_EVIDENCE:-/work/evidence/package}
 [[ "$evidence" == /work/evidence/* ]] || exit 2
 mkdir -p "$evidence"
 k get repository.kubepkg.dev/rknetes package.kubepkg.dev/kuberoot-rknetes -o yaml > "$evidence/installed.yaml"
-sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-4.tgz > "$evidence/sha256.txt"
+sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-5.tgz > "$evidence/sha256.txt"
