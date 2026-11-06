@@ -159,7 +159,16 @@ func (r *Controller) Pigeons(ctx context.Context, ns string) error {
 		if ready == 2 {
 			state = "True"
 		}
-		if err := r.C.Status(ctx, "pigeons", p, cluster.Map{"destinationNamespace": destination, "destinationUID": string(target.GetUID()), "nodeName": node, "claimName": claimName, "readyEndpoints": ready, "conditions": conditions(cluster.Condition("Ready", state, "CarrierEndpointsObserved", "Two TUN endpoints carry benchmark-range packets through a shared PVC"))}); err != nil {
+		var received int64
+		if ready == 2 && cluster.Bool(p.Object, "spec", "observeTraffic") {
+			var stats struct {
+				Injected int64 `json:"injected"`
+			}
+			if err := r.podJSON(ctx, destination, p.GetName(), 7778, "/stats", &stats); err == nil {
+				received = stats.Injected
+			}
+		}
+		if err := r.C.Status(ctx, "pigeons", p, cluster.Map{"destinationNamespace": destination, "destinationUID": string(target.GetUID()), "nodeName": node, "claimName": claimName, "readyEndpoints": ready, "receivedPackets": received, "conditions": conditions(cluster.Condition("Ready", state, "CarrierEndpointsObserved", "Two TUN endpoints carry benchmark-range packets through a shared PVC"))}); err != nil {
 			return err
 		}
 	}

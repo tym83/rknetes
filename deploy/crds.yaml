@@ -460,6 +460,25 @@
                   },
                   "target": {
                     "type": "string"
+                  },
+                  "agentPodName": {
+                    "type": "string"
+                  },
+                  "agentPort": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "pigeonRef": {
+                    "type": "string"
+                  },
+                  "gatewayNamespace": {
+                    "type": "string"
+                  },
+                  "gatewaySelector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
                   }
                 },
                 "required": []
@@ -528,6 +547,9 @@
                   "delaySeconds": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "observeTraffic": {
+                    "type": "boolean"
                   },
                   "lossPercent": {
                     "type": "integer",

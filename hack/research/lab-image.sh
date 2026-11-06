@@ -5,7 +5,7 @@ set -euo pipefail
 export PATH=/work/bin:$PATH
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update
-apt-get -qq install --no-install-recommends -y openvpn wireguard-tools iodine ptunnel-ng iproute2 openssl python3 curl >/work/tmp/tunnel-packages.log
+apt-get -qq install --no-install-recommends -y openvpn wireguard-tools iodine ptunnel-ng iproute2 net-tools openssl python3 curl >/work/tmp/tunnel-packages.log
 mkdir -p /work/out/tools /work/evidence/tunnel-build
 if [[ ! -x /work/bin/crane ]]; then GOBIN=/work/bin GOMAXPROCS=4 go install -p 4 github.com/google/go-containerregistry/cmd/crane@v0.20.3; fi
 GOBIN=/work/tmp/xray-build GOMAXPROCS=4 go install -p 4 github.com/xtls/xray-core/main@v1.250516.0
@@ -13,7 +13,7 @@ cp /work/tmp/xray-build/main /work/out/tools/xray
 GOBIN=/work/tmp/wg-build GOMAXPROCS=4 go install -p 4 golang.zx2c4.com/wireguard@v0.0.0-20261024220952-b3bc704ef0ee
 cp /work/tmp/wg-build/wireguard /work/out/tools/wireguard-go
 for name in xray wireguard-go; do go version -m "/work/out/tools/$name" > "/work/evidence/tunnel-build/$name.build-info.txt"; done
-dpkg-query -W -f='${Package}\t${Version}\t${source:Package}\t${source:Version}\n' openvpn wireguard-tools iodine ptunnel-ng iproute2 openssl python3 curl > /work/evidence/tunnel-build/debian-packages.tsv
+dpkg-query -W -f='${Package}\t${Version}\t${source:Package}\t${source:Version}\n' openvpn wireguard-tools iodine ptunnel-ng iproute2 net-tools openssl python3 curl > /work/evidence/tunnel-build/debian-packages.tsv
 export RK_BASE_ROOTFS_SHA=${RK_BASE_ROOTFS_SHA:-77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64}
 python3 - <<'PY'
 from pathlib import Path
@@ -29,7 +29,7 @@ def binary(path,destination=None):
  r=subprocess.run(['ldd',path],text=True,capture_output=True)
  for lib in re.findall(r'(/[^\s()]+)',r.stdout):
   if Path(lib).is_file():copy(lib)
-for name in ['openvpn','wg','iodine','iodined','ptunnel-ng','ip','openssl','python3','curl']:
+for name in ['openvpn','wg','iodine','iodined','ptunnel-ng','ip','ifconfig','route','openssl','python3','curl']:
  binary(shutil.which(name))
 shutil.copytree('/usr/lib/python3.11',root/'usr/lib/python3.11',dirs_exist_ok=True)
 for extension in Path('/usr/lib/python3.11').rglob('*.so'):binary(str(extension))
@@ -38,7 +38,7 @@ native=Path('/work/sbom-roots')/os.environ['RK_BASE_ROOTFS_SHA']/'usr/bin'
 for name in ['containerd','ctr','runc','etcd','etcdutl']:binary(str(native/name),'/usr/local/bin/'+name)
 copy('/work/bin/helm','/usr/local/bin/helm')
 copy('/work/bin/crane','/usr/local/bin/crane')
-for name in ['openvpn','wireguard-tools','iodine','ptunnel-ng','iproute2','openssl','python3','curl']:
+for name in ['openvpn','wireguard-tools','iodine','ptunnel-ng','iproute2','net-tools','openssl','python3','curl']:
  p=Path('/usr/share/doc')/name/'copyright'
  if p.exists():copy(str(p))
 for module,target in [('github.com/xtls/xray-core@v1.250516.0','xray'),('golang.zx2c4.com/wireguard@v0.0.0-20261024220952-b3bc704ef0ee','wireguard-go')]:

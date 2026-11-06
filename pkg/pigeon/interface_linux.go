@@ -2,13 +2,16 @@ package pigeon
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"golang.org/x/sys/unix"
+	"net/http"
 	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 )
@@ -67,7 +70,22 @@ func Endpoint(ctx context.Context, spool, source, destination, address, peer str
 	}
 	child, cancel := context.WithCancel(ctx)
 	defer cancel()
-	results := make(chan error, 3)
+	var queued, injected atomic.Uint64
+	stats := &http.Server{Addr: ":7778", ReadHeaderTimeout: 2 * time.Second, Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/stats" || r.Method != "GET" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]uint64{"queued": queued.Load(), "injected": injected.Load()})
+	})}
+	defer stats.Close()
+	results := make(chan error, 4)
+	go func() {
+		if err := stats.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			results <- err
+		}
+	}()
 	go func() { results <- Run(child, spool, destination, delay, loss) }()
 	go func() {
 		buffer := make([]byte, 65535)
@@ -89,6 +107,9 @@ func Endpoint(ctx context.Context, spool, source, destination, address, peer str
 			if !accepted && time.Since(lastFullReport) >= time.Second {
 				fmt.Println("packet rejected: bounded avian storage full")
 				lastFullReport = time.Now()
+			}
+			if accepted {
+				queued.Add(1)
 			}
 		}
 	}()
@@ -128,6 +149,7 @@ func Endpoint(ctx context.Context, spool, source, destination, address, peer str
 					results <- err
 					return
 				}
+				injected.Add(1)
 				if err := os.Rename(path, filepath.Join(consumed, entry.Name())); err != nil {
 					results <- err
 					return

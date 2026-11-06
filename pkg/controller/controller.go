@@ -35,7 +35,7 @@ func (r *Controller) Run(ctx context.Context) error {
 				run  func(context.Context, string) error
 			}{
 				{"reestr", r.Reestr}, {"throttle", r.Throttle}, {"whitelist", r.Whitelist}, {"werewolf", r.Werewolf},
-				{"pigeon", r.Pigeons}, {"measurements", r.Measurements}, {"escrow", r.Escrow}, {"drill", r.Drill}, {"cooling", r.Cooling}, {"statement", r.Statement},
+				{"pigeon", r.Pigeons}, {"tunnels", r.Tunnels}, {"measurements", r.Measurements}, {"escrow", r.Escrow}, {"drill", r.Drill}, {"cooling", r.Cooling}, {"statement", r.Statement},
 			} {
 				if err := step.run(ctx, ns.GetName()); err != nil {
 					log.Printf("%s/%s: %v", ns.GetName(), step.name, err)
