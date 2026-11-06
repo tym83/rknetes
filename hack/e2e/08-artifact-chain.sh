@@ -94,7 +94,7 @@ spec:
 YAML
  k -n "$NS" wait --for=condition=Ready pod/client --timeout=180s
 }
-pull() { k -n "$NS" exec client -- timeout 25s ctr --address /runtime/containerd.sock --namespace lab images pull --plain-http --snapshotter native "$GOSHRAN/lab/shop:1"; }
+pull() { k -n "$NS" exec client -- timeout 25s ctr --address /runtime/containerd.sock --namespace lab images pull --local --plain-http --snapshotter native "$GOSHRAN/lab/shop:1"; }
 chart() { k -n "$NS" exec client -- timeout 20s helm pull shop --repo "http://$GOSHRAN" --destination /tmp; }
 reader
 pull

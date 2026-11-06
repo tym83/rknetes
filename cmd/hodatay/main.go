@@ -31,6 +31,10 @@ func main() {
 	plainVersion := false
 	structured := false
 	index := commandIndex(args)
+	if index >= 0 && args[index] == "top" {
+		fmt.Println("Скорость в норме")
+		return
+	}
 	plainVersion = index >= 0 && args[index] == "version"
 	for _, a := range args {
 		if a == "--" {

@@ -33,19 +33,25 @@ func Endpoint(ctx context.Context, spool, source, destination, address, peer str
 	if !local.Addr().Is4() || !benchmark.Contains(local.Addr()) || !benchmark.Contains(remote) || local.Bits() != 30 || !local.Contains(remote) || local.Addr() == remote {
 		return fmt.Errorf("two distinct benchmark-range /30 peers required")
 	}
-	f, err := os.OpenFile("/dev/net/tun", os.O_RDWR|unix.O_NONBLOCK, 0)
+	// Attach before registering the descriptor with Go's poller. An unattached
+	// TUN reports EPOLLERR and has no packet wait queue yet; registering it at
+	// open time can leave subsequent reads asleep despite queued packets.
+	fd, err := unix.Open("/dev/net/tun", unix.O_RDWR|unix.O_NONBLOCK|unix.O_CLOEXEC, 0)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 	request, err := unix.NewIfreq("pigeon0")
 	if err != nil {
+		unix.Close(fd)
 		return err
 	}
 	request.SetUint16(unix.IFF_TUN | unix.IFF_NO_PI)
-	if err := unix.IoctlIfreq(int(f.Fd()), unix.TUNSETIFF, request); err != nil {
+	if err := unix.IoctlIfreq(fd, unix.TUNSETIFF, request); err != nil {
+		unix.Close(fd)
 		return err
 	}
+	f := os.NewFile(uintptr(fd), "/dev/net/tun")
+	defer f.Close()
 	for _, args := range [][]string{{"address", "add", address, "dev", "pigeon0"}, {"link", "set", "dev", "pigeon0", "mtu", "1200", "up"}} {
 		if out, err := exec.CommandContext(ctx, "ip", args...).CombinedOutput(); err != nil {
 			return fmt.Errorf("configure lab TUN: %v: %s", err, out)
