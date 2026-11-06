@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the isolated protocol/runtime fixture image entirely in the tenant.
 set -euo pipefail
-[[ -d /work/src/rknetes && -f /work/kube/rknetes.conf ]] || exit 2
+[[ -d /work/src/rknetes ]] || exit 2
 export PATH=/work/bin:$PATH
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update
@@ -14,7 +14,7 @@ GOBIN=/work/tmp/wg-build GOMAXPROCS=4 go install -p 4 golang.zx2c4.com/wireguard
 cp /work/tmp/wg-build/wireguard /work/out/tools/wireguard-go
 for name in xray wireguard-go; do go version -m "/work/out/tools/$name" > "/work/evidence/tunnel-build/$name.build-info.txt"; done
 dpkg-query -W -f='${Package}\t${Version}\t${source:Package}\t${source:Version}\n' openvpn wireguard-tools iodine ptunnel-ng iproute2 net-tools openssl python3 curl > /work/evidence/tunnel-build/debian-packages.tsv
-export RK_BASE_ROOTFS_SHA=${RK_BASE_ROOTFS_SHA:-77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64}
+source /work/src/rknetes/hack/research/native-root.sh
 python3 - <<'PY'
 from pathlib import Path
 import os,re,shutil,subprocess,tarfile
@@ -47,7 +47,7 @@ for module,target in [('github.com/xtls/xray-core@v1.250516.0','xray'),('golang.
 with tarfile.open('/work/lab-image/tools.tar','w') as out:
  for p in sorted(root.iterdir()):out.add(p,arcname=p.name,recursive=True)
 PY
-base=$(crane digest --platform linux/amd64 debian:bookworm-slim)
+base=sha256:c67e92c8099ba22853ab4cfda7cfb494d253d6012ca82dee98ba8976772af018
 printf 'debian:bookworm-slim@%s\n' "$base" > /work/evidence/tunnel-build/base-image.txt
 tag=10.244.8.11:5000/rknetes-lab-tools:1
 crane append --platform linux/amd64 --insecure -b "debian:bookworm-slim@$base" -f /work/lab-image/tools.tar -t "$tag" >/work/evidence/tunnel-build/push.log 2>&1

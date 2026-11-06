@@ -27,7 +27,14 @@ else
   builder bash /work/src/rknetes/hack/dev/bpf.sh
   builder sh -c '[ -d /work/src/kubernetes-rknetes ] || git clone --quiet --depth 1 --branch v1.37.1 https://github.com/kubernetes/kubernetes /work/src/kubernetes-rknetes'
   builder bash /work/src/rknetes/hack/importozameshchenie.sh /work/src/kubernetes-rknetes
+  builder bash /work/src/rknetes/hack/package/kine-source.sh
+  builder bash /work/src/rknetes/hack/import/tools.sh
+  builder bash /work/src/rknetes/hack/import/compiler.sh
   "$RK_ROOT/hack/kuberoot.sh" build amd64
+  "$RK_ROOT/hack/kuberoot.sh" bundle amd64
+  builder bash /work/src/rknetes/hack/package/sbom.sh
+  builder bash /work/src/rknetes/hack/research/archive-tools.sh
+  builder bash /work/src/rknetes/hack/research/lab-image.sh
 fi
 if [[ "$resume" != true ]]; then
   "$RK_ROOT/hack/kuberoot.sh" media amd64 kuberoot.datastore=etcd kuberoot.pod-network=none kuberoot.pod-cidr=10.42.0.0/16 kuberoot.service-cidr=10.96.0.0/12 kuberoot.nameserver=1.1.1.1,8.8.8.8
@@ -57,5 +64,6 @@ addresses
 builder "${remote[@]}" bash /work/src/rknetes/hack/stand/bootstrap.sh configure "$cp_ip" "$w1_ip" "$w2_ip"
 files_ip=$(wk get pod builder -o jsonpath='{.status.podIP}')
 builder "${remote[@]}" RK_BINARY_URL="http://$files_ip:8080/rknetes" bash /work/src/rknetes/hack/stand/install.sh
+builder "${remote[@]}" bash /work/src/rknetes/hack/research/preload-lab-image.sh
 if [[ "${RK_REUSE_ARTIFACTS:-0}" != 1 ]]; then builder "${remote[@]}" bash /work/src/rknetes/hack/package/build.sh "$files_ip"; fi
 builder "${remote[@]}" bash /work/src/rknetes/hack/package/install.sh "$files_ip"

@@ -26,6 +26,6 @@ install -m 0644 /work/src/rknetes/distro/kuberoot/rknetes/audit-policy.yaml "$r/
 install -m 0644 /work/src/rknetes/hack/import/components.json "$r/usr/share/rknetes/components.json"
 cat > "$r/usr/bin/otechestvennoe-yadro" <<'SCRIPT'
 #!/bin/sh
-exec uname -a
+exec /bin/busybox uname -a
 SCRIPT
 chmod 0755 "$r/usr/bin/otechestvennoe-yadro"

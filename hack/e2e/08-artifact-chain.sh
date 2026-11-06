@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+source /work/src/rknetes/hack/research/native-root.sh
 NS=${RK_ARTIFACT_CLIENTS:-lab-artifact-clients}
 SERVERS=${RK_ARTIFACT_SERVERS:-lab-artifact-services}
 new_namespace "$NS"
@@ -16,9 +17,9 @@ rm -rf -- "$fixture_dir"
 mkdir -p "$fixture_dir" /work/out/fixtures
 app_args=()
 if [[ -n "${RK_ARTIFACT_APPLICATION:-}" ]]; then app_args=(--application "$RK_ARTIFACT_APPLICATION"); fi
-python3 hack/fixtures/artifacts.py --directory "$fixture_dir" --prepare /work/sbom-roots/77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64/bin/busybox --variant "${RK_ARTIFACT_VARIANT:-}" "${app_args[@]}"
+python3 hack/fixtures/artifacts.py --directory "$fixture_dir" --prepare "$RK_NATIVE_ROOT/bin/busybox" --variant "${RK_ARTIFACT_VARIANT:-}" "${app_args[@]}"
 if [[ "${RK_ARTIFACT_TWO_VERSIONS:-}" == 1 ]]; then
- python3 hack/fixtures/artifacts.py --directory "$fixture_dir/second" --prepare /work/sbom-roots/77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64/bin/busybox --variant "${RK_ARTIFACT_VARIANT:-}-second" "${app_args[@]}"
+ python3 hack/fixtures/artifacts.py --directory "$fixture_dir/second" --prepare "$RK_NATIVE_ROOT/bin/busybox" --variant "${RK_ARTIFACT_VARIANT:-}-second" "${app_args[@]}"
  cp "$fixture_dir"/second/sha256-* "$fixture_dir/"
  cp "$fixture_dir/second/manifest.json" "$fixture_dir/manifest-2.json"
  rm -rf -- "$fixture_dir/second"

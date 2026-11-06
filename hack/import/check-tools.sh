@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd /work/src/rknetes
+source hack/research/native-root.sh
 python3 - <<'PY'
 import json,pathlib,subprocess,hashlib,os
-native=pathlib.Path('/work/sbom-roots/77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64/usr/bin');tools=pathlib.Path('/work/import-tools/bin');out=[]
+native=(pathlib.Path(os.environ['RK_NATIVE_ROOT'])/'usr/bin');tools=pathlib.Path('/work/import-tools/bin');out=[]
 aliases={'prochee':'etcd','gosplan':'kube-scheduler','kru':'kube-controller-manager','uchastkovy':'kubelet','pochta':'kube-proxy','terminal':'containerd','begunok':'runc'}
 for alias,name in aliases.items():
  target=tools/alias

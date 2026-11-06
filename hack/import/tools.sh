@@ -4,8 +4,10 @@ set -euo pipefail
 export PATH=/work/bin:$PATH
 ROOT=/work/import-tools
 mkdir -p "$ROOT/downloads" "$ROOT/bin" "$ROOT/licenses" /work/evidence/import-tools
+if [[ ! -x /work/bin/crane ]]; then GOBIN=/work/bin GOMAXPROCS=4 go install -p 4 github.com/google/go-containerregistry/cmd/crane@v0.20.6; fi
 cd "$ROOT/downloads"
 curl -fsSL --retry 3 https://download.docker.com/linux/static/stable/x86_64/docker-28.0.1.tgz -o docker.tgz
+printf '%s\n' '5ed6d86b5d78199eac0dbcd4d81e6de6545bc8c8a575b6efc1d4a4b292824746  docker.tgz' | sha256sum -c -
 curl -fsSL --retry 3 https://dl.grafana.com/oss/release/grafana-11.5.2.linux-amd64.tar.gz -o grafana.tgz
 printf '%s\n' '205b16da72842143a6fa1849126b7bd74b5d12a609387d3d037fb104440ea349  grafana.tgz' | sha256sum -c -
 curl -fsSL --retry 3 https://github.com/prometheus/prometheus/releases/download/v3.2.1/prometheus-3.2.1.linux-amd64.tar.gz -o prometheus.tgz
@@ -21,16 +23,18 @@ cp "$ROOT/prometheus-3.2.1.linux-amd64/LICENSE" "$ROOT/licenses/prometheus-LICEN
 cp "$ROOT/prometheus-3.2.1.linux-amd64/NOTICE" "$ROOT/licenses/prometheus-NOTICE"
 cp "$ROOT/grafana-v11.5.2/LICENSE" "$ROOT/licenses/grafana-LICENSE"
 curl -fsSL https://raw.githubusercontent.com/moby/moby/v28.0.1/LICENSE -o "$ROOT/licenses/docker-LICENSE"
-export KUBECONFIG=/work/kube/rknetes.conf
+# Release inputs are pinned independently of a running Kubernetes cluster.
+: > /work/evidence/import-tools/images.tsv
 for component in coredns cilium; do
  if [[ "$component" == coredns ]]; then
-  image=$(kubectl --context admin@workshop -n kube-system get deployment coredns -o jsonpath='{.spec.template.spec.containers[0].image}'); source=coredns; target=spravochnaya09
+  image=coredns/coredns:1.14.7@sha256:2329f5f0e7e79fbe56dcdf11ecc4337ee2476bb251095bc275fe9461cb88a55b
+  source=coredns; target=spravochnaya09
  else
-  image=$(kubectl --context admin@workshop -n kube-system get daemonset cilium -o jsonpath='{.spec.template.spec.containers[0].image}'); source=usr/bin/cilium-dbg; target=resnichki
+  image=quay.io/cilium/cilium:v1.20.4@sha256:fa56fecd779584642c7ec2da6872c03c45c1f1043da66665a73ed8c425584d54
+  source=usr/bin/cilium-dbg; target=resnichki
  fi
- digest=$(crane digest --platform linux/amd64 "$image")
- printf '%s\t%s@%s\n' "$component" "${image%@*}" "$digest" >> /work/evidence/import-tools/images.tsv
- crane export --platform linux/amd64 "${image%@*}@$digest" - | tar -xOf - "$source" > "$ROOT/bin/$target"
+ printf '%s\t%s\n' "$component" "$image" >> /work/evidence/import-tools/images.tsv
+ crane export --platform linux/amd64 "$image" - | tar -xOf - "$source" > "$ROOT/bin/$target"
  chmod +x "$ROOT/bin/$target"
 done
 cp /work/bin/helm "$ROOT/bin/kormilo"
