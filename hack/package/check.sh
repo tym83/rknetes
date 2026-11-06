@@ -19,6 +19,22 @@ for name in rknet-controller rknet-admission watch-office; do
   k -n rknet-system rollout status "deployment/$name" --timeout=180s
 done
 k -n rknet-system rollout status daemonset/maxlet --timeout=180s
+k -n rknet-system rollout status daemonset/tspu --timeout=180s
+k -n rknet-system get daemonset tspu -o json | python3 -c '
+import hashlib,json,pathlib,sys
+p=json.load(sys.stdin)["spec"]["template"]
+for name,field in [("tspu","binary"),("tspu.o","object")]:
+ expected=hashlib.sha256((pathlib.Path("/work/out/rknetes")/name).read_bytes()).hexdigest()
+ assert p["metadata"]["annotations"]["rknetes.su/"+field+"-sha256"]==expected
+print("PASS: signed package includes the current TSPU binary and BPF object")'
+k -n rknet-system get configmap runtime-artifacts -o json | python3 -c '
+import hashlib,json,pathlib,sys
+p=json.load(sys.stdin)["data"]
+assert "@sha256:" in p["image"]
+for name in ["pigeon","drill-trigger","archive-agent"]:
+ assert p["sha256."+name]==hashlib.sha256((pathlib.Path("/work/out/rknetes")/name).read_bytes()).hexdigest()
+print("PASS: runtime helpers use the signed release hashes and immutable image")'
+
 k -n rknet-system get pods -l app=rknet-controller -o json | python3 -c '
 import json,sys
 pod=json.load(sys.stdin)["items"][0]
@@ -29,4 +45,4 @@ evidence=${RK_PACKAGE_EVIDENCE:-/work/evidence/package}
 [[ "$evidence" == /work/evidence/* ]] || exit 2
 mkdir -p "$evidence"
 k get repository.kubepkg.dev/rknetes package.kubepkg.dev/kuberoot-rknetes -o yaml > "$evidence/installed.yaml"
-sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-3.tgz > "$evidence/sha256.txt"
+sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-4.tgz > "$evidence/sha256.txt"

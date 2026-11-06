@@ -13,7 +13,9 @@ for obj in objects:
     meta = obj['metadata']
     args = base + (['-n', meta['namespace']] if meta.get('namespace') else [])
     resource = obj['kind']+'/'+meta['name']
-    current = json.loads(subprocess.check_output(args+['get', resource, '-o', 'json']))
+    read = subprocess.run(args+['get', resource, '-o', 'json', '--ignore-not-found'],text=True,capture_output=True,check=True)
+    if not read.stdout.strip():continue
+    current = json.loads(read.stdout)
     annotations = current['metadata'].get('annotations', {})
     owner = annotations.get('meta.helm.sh/release-name')
     if owner and owner != 'rknetes':

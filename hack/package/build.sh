@@ -10,10 +10,13 @@ mkdir -p /work/keys /work/out/packages /work/package/dist
 if [[ ! -f /work/keys/rknetes-index.key ]]; then "$PKG" repo keygen /work/keys/rknetes-index; fi
 runtime=$(k -n rknet-system get pods -l app=rknet-controller -o jsonpath='{.items[0].status.containerStatuses[0].imageID}')
 [[ "$runtime" == *@sha256:* ]]
-snapshot=$(cd /work/out/rknetes && sha256sum rknet-controller rknet-admission watch-office maxlet | sha256sum | cut -d' ' -f1)
+names=()
+for source in /work/src/rknetes/cmd/*/main.go; do name=${source%/main.go}; names+=("${name##*/}"); done
+names+=(tspu.o)
+snapshot=$(cd /work/out/rknetes && sha256sum "${names[@]}" | sha256sum | cut -d' ' -f1)
 dest=/work/out/releases/$snapshot
 mkdir -p "$dest"
-for name in rknet-controller rknet-admission watch-office maxlet; do
+for name in "${names[@]}"; do
   if [[ -f "$dest/$name" ]]; then cmp "/work/out/rknetes/$name" "$dest/$name"; else cp "/work/out/rknetes/$name" "$dest/$name"; fi
 done
 python3 /work/src/rknetes/hack/package/chart.py "$ROOT" "http://$FILES:8080/releases/$snapshot" "$runtime"

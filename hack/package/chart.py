@@ -15,10 +15,10 @@ assert '@sha256:' in runtime_image
 chart = output/'charts/rknetes'
 (chart/'templates').mkdir(parents=True, exist_ok=True)
 (chart/'crds').mkdir(exist_ok=True)
-(chart/'Chart.yaml').write_text('apiVersion: v2\nname: rknetes\nversion: 0.1.0-3\nappVersion: "0.1.0"\ntype: application\ndescription: Scoped RKNetes controllers, admission and authenticated stream gateways\n')
-names = ['rknet-controller', 'rknet-admission', 'watch-office', 'maxlet']
+(chart/'Chart.yaml').write_text('apiVersion: v2\nname: rknetes\nversion: 0.1.0-4\nappVersion: "0.1.0"\ntype: application\ndescription: Scoped RKNetes controllers, admission and authenticated stream gateways\n')
+names = sorted([p.parent.name for p in (root/'cmd').glob('*/main.go')]+['tspu.o'])
 checksums = {name: hashlib.sha256((pathlib.Path('/work/out/rknetes')/name).read_bytes()).hexdigest() for name in names}
-(chart/'values.yaml').write_text(json.dumps({'binaryURL': binary_url, 'runtimeImage': runtime_image, 'sha256': checksums}, indent=2)+'\n')
+(chart/'values.yaml').write_text(json.dumps({'binaryURL': binary_url, 'runtimeImage': runtime_image, 'artifactImage': pathlib.Path('/work/out/tools/lab-image.ref').read_text().strip(), 'sha256': checksums}, indent=2)+'\n')
 manifest = subprocess.check_output([sys.executable, str(root/'hack/stand/render.py')], env={**os.environ, 'RK_BINARY_URL': '{{ .Values.binaryURL }}', 'RK_CA': '{{ $admissionCA }}'})
 objects = json.loads(manifest)['items']
 for obj in objects:
@@ -33,6 +33,12 @@ for obj in objects:
     init['command'] = ['sh', '-ec',
         'wget -q -O '+destination+'/'+binary+' "$1/'+binary+'"; printf "%s  '+destination+'/'+binary+'\\n" "$2" | sha256sum -c -; chmod 755 '+destination+'/'+binary,
         'download', '{{ .Values.binaryURL }}', '{{ index .Values.sha256 "'+binary+'" }}']
+tspu = subprocess.check_output([sys.executable, str(root/'hack/tspu/render.py')], env={**os.environ,
+ 'TSPU_URL': '{{ .Values.binaryURL }}', 'TSPU_SHA': '{{ index .Values.sha256 "tspu" }}',
+ 'TSPU_OBJECT_SHA': '{{ index .Values.sha256 "tspu.o" }}', 'TSPU_IMAGE': '{{ .Values.runtimeImage }}'})
+objects.extend(json.loads(tspu)['items'])
+objects.append({'apiVersion':'v1','kind':'ConfigMap','metadata':{'name':'runtime-artifacts','namespace':'rknet-system','labels':{'rknetes.su/managed':'true'}},
+ 'data':{'url':'{{ .Values.binaryURL }}','image':'{{ .Values.artifactImage }}',**{'sha256.'+name: '{{ index .Values.sha256 "'+name+'" }}' for name in ['pigeon','drill-trigger','archive-agent']}}})
 # Helm expressions inside JSON string values must retain literal inner quotes.
 body = '\n---\n'.join(json.dumps(obj, ensure_ascii=False) for obj in objects)
 body = re.sub(r'{{.*?}}', lambda match: match.group(0).replace('\\"', '"'), body)
@@ -54,7 +60,7 @@ crds = (root/'deploy/crds.yaml').read_text()
 (chart/'crds/rknetes.yaml').write_text(crds)
 crd_names = [json.loads(document)['metadata']['name'] for document in crds.split('\n---\n') if document.strip()]
 assert len(crd_names) == 17
-recipe = {'apiVersion': 'kubepkg.dev/v1', 'kind': 'Recipe', 'metadata': {'name': 'kuberoot-rknetes'}, 'spec': {'version': '0.1.0', 'build': 3, 'sources': {'rknetes': {'dir': 'charts/rknetes'}}, 'charts': {'rknetes': {'from': ['rknetes']}}, 'package': {'crds': crd_names, 'variants': [{'name': 'default', 'requires': [{'package': 'coredns', 'version': '~1.14'}], 'components': [{'name': 'rknetes', 'path': 'rknetes', 'install': {'namespace': 'rknet-system', 'releaseName': 'rknetes', 'privileged': True, 'upgradeCRDs': 'CreateReplace'}}]}]}}}
+recipe = {'apiVersion': 'kubepkg.dev/v1', 'kind': 'Recipe', 'metadata': {'name': 'kuberoot-rknetes'}, 'spec': {'version': '0.1.0', 'build': 4, 'sources': {'rknetes': {'dir': 'charts/rknetes'}}, 'charts': {'rknetes': {'from': ['rknetes']}}, 'package': {'crds': crd_names, 'variants': [{'name': 'default', 'requires': [{'package': 'coredns', 'version': '~1.14'}], 'components': [{'name': 'rknetes', 'path': 'rknetes', 'install': {'namespace': 'rknet-system', 'releaseName': 'rknetes', 'privileged': True, 'upgradeCRDs': 'CreateReplace'}}]}]}}}
 (output/'recipe.yaml').write_text(json.dumps(recipe, indent=2)+'\n')
 # The adoption allowlist contains only resources produced by this repository.
 adopt = [{'apiVersion': o['apiVersion'], 'kind': o['kind'], 'metadata': o['metadata']} for o in objects]
