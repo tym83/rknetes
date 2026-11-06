@@ -65,6 +65,7 @@ add("admissionregistration.k8s.io/v1", "ValidatingWebhookConfiguration", "rknet-
 add("admissionregistration.k8s.io/v1", "MutatingWebhookConfiguration", "rknet-origin", webhooks=[hook("inoagent", "/inoagent", ["CREATE"], ["pods"])])
 
 ns(add("v1", "ServiceAccount", "maxlet"))
+add("scheduling.k8s.io/v1", "PriorityClass", "rknetes-max", value=900000000, globalDefault=False, preemptionPolicy="Never", description="MAX has scheduling priority over ordinary Pods; the host kubelet is outside Pod priority.")
 add("rbac.authorization.k8s.io/v1", "ClusterRole", "maxlet", rules=[
     {"apiGroups": [""], "resources": ["pods", "namespaces", "configmaps"], "verbs": ["get"]},
     {"apiGroups": [""], "resources": ["pods/exec", "pods/attach", "pods/portforward"], "verbs": ["create", "get"]},
@@ -74,7 +75,7 @@ add("rbac.authorization.k8s.io/v1", "ClusterRole", "maxlet", rules=[
 ])
 add("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "maxlet", roleRef={"apiGroup":"rbac.authorization.k8s.io","kind":"ClusterRole","name":"maxlet"}, subjects=[{"kind":"ServiceAccount","name":"maxlet","namespace":"rknet-system"}])
 ns(add("apps/v1", "DaemonSet", "maxlet", spec={"selector":{"matchLabels":{"app":"maxlet"}},"template":{"metadata":{"labels":{"app":"maxlet"}},"spec":{
-    "serviceAccountName":"maxlet","tolerations":[{"operator":"Exists"}],
+    "serviceAccountName":"maxlet","priorityClassName":"rknetes-max","tolerations":[{"operator":"Exists"}],
     "initContainers":[{"name":"binary","image":"busybox:1.37","command":["sh","-ec",'wget -q -O /bin/rk/maxlet "$1/maxlet"; chmod +x /bin/rk/maxlet',"download",os.environ["RK_BINARY_URL"]],"volumeMounts":[{"name":"bin","mountPath":"/bin/rk"}]}],
     "containers":[{"name":"maxlet","image":"busybox:1.37","command":["/bin/rk/maxlet"],"volumeMounts":[{"name":"bin","mountPath":"/bin/rk"},{"name":"tls","mountPath":"/tls"},{"name":"archive","mountPath":"/archive"}]}],
     "volumes":[{"name":"bin","emptyDir":{}},{"name":"tls","secret":{"secretName":"maxlet-tls"}},{"name":"archive","hostPath":{"path":"/var/lib/rknetes/max","type":"DirectoryOrCreate"}}]

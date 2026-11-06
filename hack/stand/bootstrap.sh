@@ -58,6 +58,15 @@ k() { kubectl --context admin@workshop "$@"; }
 k -n kube-system create configmap rknetes-stand --from-literal=scope=nested-only --from-literal=podCIDR=10.42.0.0/16 --from-literal=serviceCIDR=10.96.0.0/12 --dry-run=client -o yaml | k apply -f -
 for address in "$W1_IP" "$W2_IP"; do
   name=$(node "$address" get osconfigs -o jsonpath='{.items[0].metadata.name}')
+  if [[ -n "${RK_MAX_ENROLLMENT_SERVER:-}" ]]; then
+    membership="$KUBE_DIR/max-membership-$name.yaml"
+    /work/out/optional/max-enroll --kubeconfig "$KUBE_DIR/rknetes.conf" --context admin@workshop \
+      --node-kubeconfig "$KUBE_DIR/node.conf" --node-server "https://$CP_IP:50000" --node-name "$name" \
+      --max-server "$RK_MAX_ENROLLMENT_SERVER" --max-ca "${RK_MAX_ENROLLMENT_CA:?}" \
+      --session-file "${RK_MAX_ENROLLMENT_SESSION:?}" --failure-policy "${RK_MAX_ENROLLMENT_FAILURE_POLICY:-Closed}" --output "$membership"
+    node "$address" create -f "$membership"
+    continue
+  fi
   node "$CP_IP" create -f - <<YAML
 apiVersion: node.kuberoot.dev/v1alpha1
 kind: JoinTicket

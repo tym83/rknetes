@@ -20,6 +20,14 @@ func main() {
 				os.Exit(2)
 			}
 			args = append([]string{"--server=" + server, "--certificate-authority=" + ca}, append(args[:i:i], args[i+1:]...)...)
+			if file := os.Getenv("HODATAY_MAX_SESSION_FILE"); file != "" {
+				token, err := os.ReadFile(file)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "cannot read private MAX session")
+					os.Exit(2)
+				}
+				args = append([]string{"--token=" + strings.TrimSpace(string(token))}, args...)
+			}
 			break
 		}
 	}

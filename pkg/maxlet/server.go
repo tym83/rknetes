@@ -26,12 +26,16 @@ import (
 	"time"
 )
 
-var callPath = regexp.MustCompile(`^/api/v1/namespaces/([a-z0-9-]+)/pods/([a-z0-9.-]+)(?:/(exec|attach|portforward))?$`)
+var callPath = regexp.MustCompile(`^/api/v1/namespaces/([a-z0-9-]+)/pods/([a-z0-9.-]+)(?:/(exec|attach|portforward|log))?$`)
+var discoveryPath = regexp.MustCompile(`^(/api(/v1)?|/apis(/[a-z0-9.-]+(/[a-zA-Z0-9]+)?)?|/version|/openapi/(v2|v3)(/apis/[a-z0-9.-]+/[a-zA-Z0-9]+)?)$`)
 
 type Server struct {
-	C       *cluster.Client
-	Proxy   *httputil.ReverseProxy
-	Archive string
+	C                   *cluster.Client
+	Proxy               *httputil.ReverseProxy
+	Archive             string
+	Factor              *Factor
+	EnrollmentNamespace string
+	LabDefinitions      bool
 }
 
 func New(c *cluster.Client, archive string) (*Server, error) {
@@ -50,8 +54,11 @@ func New(c *cluster.Client, archive string) (*Server, error) {
 		director(r)
 		r.Host = endpoint.Host
 		r.Header.Del("Authorization")
-		r.Header.Del("Impersonate-User")
-		r.Header.Del("Impersonate-Group")
+		for key := range r.Header {
+			if strings.HasPrefix(strings.ToLower(key), "impersonate-") {
+				r.Header.Del(key)
+			}
+		}
 	}
 	return &Server{C: c, Proxy: proxy, Archive: archive}, os.MkdirAll(archive, 0700)
 }
@@ -60,9 +67,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "verified client certificate required", 401)
 		return
 	}
+	if !s.Factor.authorize(w, r) {
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/enrollment/") {
+		s.enrollment(w, r)
+		return
+	}
 	match := callPath.FindStringSubmatch(r.URL.Path)
 	if match == nil {
-		if r.Method == "GET" && (r.URL.Path == "/api" || r.URL.Path == "/apis" || r.URL.Path == "/api/v1" || r.URL.Path == "/version" || strings.HasPrefix(r.URL.Path, "/apis/") || strings.HasPrefix(r.URL.Path, "/openapi/")) {
+		if s.LabDefinitions && strings.HasPrefix(r.URL.Path, "/apis/apiextensions.k8s.io/v1/customresourcedefinitions") {
+			s.definition(w, r)
+			return
+		}
+		if r.Method == "GET" && discoveryPath.MatchString(r.URL.Path) {
 			s.Proxy.ServeHTTP(w, r)
 			return
 		}
@@ -76,7 +94,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	cert := r.TLS.VerifiedChains[0][0]
 	verb := "create"
-	if match[3] == "" {
+	if match[3] == "" || match[3] == "log" {
 		if r.Method != "GET" {
 			http.Error(w, "read or call required", 405)
 			return
