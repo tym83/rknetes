@@ -81,6 +81,13 @@ func (r *Controller) Cooling(ctx context.Context, ns string) error {
 			return fmt.Errorf("node %s is not an explicitly selected lab node", name)
 		}
 		release := cluster.Bool(p.Object, "spec", "captchaSolved") || time.Since(p.GetCreationTimestamp().Time) >= time.Duration(cluster.Int(p.Object, 86400, "spec", "durationSeconds"))*time.Second
+		if !release {
+			solved, err := r.captcha(ctx, p)
+			if err != nil {
+				return err
+			}
+			release = solved
+		}
 		old, _, _ := unstructured.NestedSlice(n.Object, "spec", "taints")
 		updated := []interface{}{}
 		exists := false

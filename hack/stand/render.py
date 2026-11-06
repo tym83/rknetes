@@ -19,6 +19,8 @@ add("rbac.authorization.k8s.io/v1", "ClusterRole", "rknet-controller", rules=[
     {"apiGroups": ["rknetes.su"], "resources": ["*"], "verbs": ["get", "list", "watch", "create", "patch", "update", "delete"]},
     {"apiGroups": [""], "resources": ["namespaces", "pods", "nodes", "services", "secrets", "configmaps", "events"], "verbs": ["get", "list", "watch", "create", "patch", "update"]},
     {"apiGroups": [""], "resources": ["pods/status"], "verbs": ["patch"]},
+    {"apiGroups": [""], "resources": ["pods/proxy"], "verbs": ["get"]},
+    {"apiGroups": ["coordination.k8s.io"], "resources": ["leases"], "verbs": ["get"]},
     {"apiGroups": [""], "resources": ["persistentvolumes", "persistentvolumeclaims"], "verbs": ["get", "list", "create", "update", "patch", "delete"]},
     {"apiGroups": [""], "resources": ["pods"], "verbs": ["delete"]},
     {"apiGroups": ["discovery.k8s.io"], "resources": ["endpointslices"], "verbs": ["get", "list", "watch"]},
@@ -66,6 +68,8 @@ ns(add("v1", "ServiceAccount", "maxlet"))
 add("rbac.authorization.k8s.io/v1", "ClusterRole", "maxlet", rules=[
     {"apiGroups": [""], "resources": ["pods", "namespaces", "configmaps"], "verbs": ["get"]},
     {"apiGroups": [""], "resources": ["pods/exec", "pods/attach", "pods/portforward"], "verbs": ["create", "get"]},
+    {"apiGroups": [""], "resources": ["pods/log"], "verbs": ["get"]},
+    {"apiGroups": [""], "resources": ["events"], "verbs": ["get", "list", "watch"]},
     {"apiGroups": ["authorization.k8s.io"], "resources": ["subjectaccessreviews"], "verbs": ["create"]},
 ])
 add("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "maxlet", roleRef={"apiGroup":"rbac.authorization.k8s.io","kind":"ClusterRole","name":"maxlet"}, subjects=[{"kind":"ServiceAccount","name":"maxlet","namespace":"rknet-system"}])

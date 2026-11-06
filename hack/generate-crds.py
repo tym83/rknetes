@@ -45,7 +45,7 @@ kinds = {
     "SovereigntyDrill": ("sovereigntydrills", [], obj({"enabled": boolean, "foreignSelector": labels})),
     "BloggerRegistration": ("bloggerregistrations", [], obj({"resource": string, "name": string, "registered": boolean, "threshold": integer})),
     "AdvertisingPolicy": ("advertisingpolicies", [], obj({"enabled": boolean})),
-    "CoolingPolicy": ("coolingpolicies", [], obj({"nodeName": string, "durationSeconds": integer, "captchaURL": string, "captchaSolved": boolean}, ["nodeName"])),
+    "CoolingPolicy": ("coolingpolicies", [], obj({"nodeName": string, "durationSeconds": integer, "captchaURL": string, "captchaSHA256": string, "captchaSolved": boolean, "reason": string}, ["nodeName"])),
     "StatusStatement": ("statusstatements", [], obj({"subject": string})),
 }
 crds = []
