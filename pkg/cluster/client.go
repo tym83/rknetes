@@ -43,7 +43,7 @@ func New(kubeconfig, contextName string) (*Client, error) {
 }
 func Resource(name string) schema.GroupVersionResource {
 	switch name {
-	case "pods", "services", "secrets", "configmaps", "namespaces", "nodes", "events", "resourcequotas", "persistentvolumeclaims", "persistentvolumes":
+	case "pods", "services", "serviceaccounts", "secrets", "configmaps", "namespaces", "nodes", "events", "resourcequotas", "persistentvolumeclaims", "persistentvolumes":
 		return schema.GroupVersionResource{Version: "v1", Resource: name}
 	case "endpointslices":
 		return schema.GroupVersionResource{Group: "discovery.k8s.io", Version: "v1", Resource: name}

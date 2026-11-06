@@ -755,6 +755,27 @@
                     "additionalProperties": {
                       "type": "string"
                     }
+                  },
+                  "resolveDigests": {
+                    "type": "boolean"
+                  },
+                  "foreignImages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "insecureRegistries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "registryMirrors": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
                   }
                 },
                 "required": []

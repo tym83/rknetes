@@ -39,7 +39,7 @@ kinds = {
     "Pigeon": ("pigeons", [], obj({"claimName": string, "nodeName": string, "destinationNamespace": string, "delaySeconds": integer, "observeTraffic": boolean, "lossPercent": {"type": "integer", "minimum": 0, "maximum": 100}})),
     "Werewolf": ("werewolves", [], obj({"address": string, "selector": labels, "port": integer}, ["address", "selector", "port"])),
     "CallRestriction": ("callrestrictions", [], obj({"enabled": boolean})),
-    "ForeignAgentPolicy": ("foreignagentpolicies", [], obj({"enabled": boolean, "digests": strings, "rewriteImages": labels})),
+    "ForeignAgentPolicy": ("foreignagentpolicies", [], obj({"enabled": boolean, "digests": strings, "rewriteImages": labels, "resolveDigests": boolean, "foreignImages": strings, "insecureRegistries": strings, "registryMirrors": labels})),
     "ArchivePolicy": ("archivepolicies", [], obj({"claimName": string, "retentionDays": integer, "capturePayload": boolean})),
     "DataBoundaryPolicy": ("databoundarypolicies", [], obj({"selector": labels, "primaryService": string})),
     "SovereigntyDrill": ("sovereigntydrills", [], obj({"enabled": boolean, "foreignSelector": labels})),

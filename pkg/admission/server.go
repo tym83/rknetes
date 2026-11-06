@@ -95,25 +95,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			deny(out, "AgencyUnavailable", err.Error())
 			break
 		}
-		foreign := false
-		spec, _ := req.Object["spec"].(map[string]interface{})
-		containers, _ := spec["containers"].([]interface{})
-		for _, p := range policies {
-			if !cluster.Bool(p.Object, "spec", "enabled") {
-				continue
-			}
-			for _, container := range containers {
-				image := cluster.String(container.(map[string]interface{}), "image")
-				foreign = foreign || IsForeign(image, cluster.Strings(p.Object, "spec", "digests"))
-			}
+		patches, err := s.origin(r.Context(), req, policies)
+		if err != nil {
+			deny(out, "ImageResolutionUnavailable", err.Error())
+			break
 		}
-		if foreign {
-			labels := cluster.Labels(req.Object, "metadata", "labels")
-			if labels == nil {
-				labels = map[string]string{}
-			}
-			labels["rknetes.su/inoagent"] = "true"
-			patch, err := json.Marshal([]cluster.Map{{"op": "add", "path": "/metadata/labels", "value": labels}})
+		if len(patches) > 0 {
+			patch, err := json.Marshal(patches)
 			if err != nil {
 				deny(out, "InvalidPatch", err.Error())
 				break

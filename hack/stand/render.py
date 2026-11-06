@@ -28,7 +28,7 @@ add("rbac.authorization.k8s.io/v1", "ClusterRole", "rknet-controller", rules=[
 ])
 add("rbac.authorization.k8s.io/v1", "ClusterRole", "rknet-admission", rules=[
     {"apiGroups": ["rknetes.su"], "resources": ["callrestrictions", "advertisingpolicies", "foreignagentpolicies"], "verbs": ["get", "list"]},
-    {"apiGroups": [""], "resources": ["configmaps"], "verbs": ["get"]},
+    {"apiGroups": [""], "resources": ["configmaps", "secrets", "serviceaccounts"], "verbs": ["get"]},
 ])
 ns(add("v1", "ServiceAccount", "watch-office"))
 add("rbac.authorization.k8s.io/v1", "ClusterRole", "watch-office", rules=[
