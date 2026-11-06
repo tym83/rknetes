@@ -39,3 +39,11 @@ The proof Job completed an actual one-commit fast-forward; before/after commits
 and patches are retained. LICENSE and NOTICE comparisons stay clean. No push
 occurs, and this checkout does not replace the pinned release source. A merge
 conflict fails the Job and leaves its evidence for review.
+
+The final native overlay replaces the upstream dirty Kine binary with a clean
+build of commit35f4319798cf3543e49f86c775a1f8c5c23b1e80 (v0.17.1). The first
+rebuild exposed Go automatically changing protobuf from an indirect to a direct
+requirement. With the original go.mod and `-mod=readonly`, SQLite/server tests
+pass, `vcs.modified=false`, and two builds match SHA256
+`2b10a10a1eb8218a297dbdc7ce41c045d54e5093e2f53be3fcf61bcfb4cd1467`.
+The observed patch and both build identities are in `kine-provenance.tar.gz`.

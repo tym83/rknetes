@@ -38,3 +38,11 @@ CronJob `tenant-rknetes/rknetes-upstream-sync` запускается по пя�
 новый хеши и патчи сохранены. LICENSE и NOTICE не меняются. Push отсутствует,
 фиксированные исходники релиза не заменяются. Конфликт завершает Job с ошибкой
 и сохраняет материал для разбора.
+
+Итоговый overlay заменяет upstream-бинарник Kine с dirty-флагом чистой сборкой
+коммита35f4319798cf3543e49f86c775a1f8c5c23b1e80 (v0.17.1). Первый повтор выявил
+автоматический перенос protobuf из косвенных зависимостей в прямые. Исходный
+go.mod и `-mod=readonly` дают успешные SQLite/server-тесты,
+`vcs.modified=false` и совпадающие две сборки SHA256
+`2b10a10a1eb8218a297dbdc7ce41c045d54e5093e2f53be3fcf61bcfb4cd1467`.
+Наблюдённый патч и обе build identity сохранены в `kine-provenance.tar.gz`.
