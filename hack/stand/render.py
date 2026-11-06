@@ -29,12 +29,12 @@ add("rbac.authorization.k8s.io/v1", "ClusterRole", "rknet-controller", rules=[
     {"apiGroups": ["cilium.io"], "resources": ["ciliumnetworkpolicies"], "verbs": ["get", "list", "watch", "create", "patch", "update", "delete"]},
 ])
 add("rbac.authorization.k8s.io/v1", "ClusterRole", "rknet-admission", rules=[
-    {"apiGroups": ["rknetes.su"], "resources": ["callrestrictions", "advertisingpolicies", "foreignagentpolicies"], "verbs": ["get", "list"]},
+    {"apiGroups": ["rknetes.su"], "resources": ["callrestrictions", "advertisingpolicies", "foreignagentpolicies", "archivepolicies"], "verbs": ["get", "list"]},
     {"apiGroups": [""], "resources": ["configmaps", "secrets", "serviceaccounts"], "verbs": ["get"]},
 ])
 ns(add("v1", "ServiceAccount", "watch-office"))
 add("rbac.authorization.k8s.io/v1", "ClusterRole", "watch-office", rules=[
-    {"apiGroups":[""],"resources":["namespaces","configmaps"],"verbs":["get","list","watch"]},
+    {"apiGroups":["*"],"resources":["*"],"verbs":["get","list","watch"]},
     {"apiGroups":["rknetes.su"],"resources":["bloggerregistrations","bloggerregistrations/status"],"verbs":["get","list","create","patch"]},
     {"apiGroups":["authorization.k8s.io"],"resources":["subjectaccessreviews"],"verbs":["create"]},
 ])
@@ -64,7 +64,7 @@ hooks = [hook("calls", "/calls", ["CONNECT"], ["pods/exec", "pods/attach", "pods
          hook("erid", "/erid", ["CREATE", "UPDATE"], ["events"], ["", "events.k8s.io"])]
 hooks += [hook("agency-" + str(i), "/agency/" + str(i), ["CREATE"], ["pods"]) for i in range(15)]
 add("admissionregistration.k8s.io/v1", "ValidatingWebhookConfiguration", "rknet-agencies", webhooks=hooks)
-add("admissionregistration.k8s.io/v1", "MutatingWebhookConfiguration", "rknet-origin", webhooks=[hook("inoagent", "/inoagent", ["CREATE"], ["pods"])])
+add("admissionregistration.k8s.io/v1", "MutatingWebhookConfiguration", "rknet-origin", webhooks=[hook("inoagent", "/inoagent", ["CREATE"], ["pods"]), hook("archive", "/archive", ["CREATE"], ["pods"])])
 
 ns(add("v1", "ServiceAccount", "maxlet"))
 add("scheduling.k8s.io/v1", "PriorityClass", "rknetes-max", value=900000000, globalDefault=False, preemptionPolicy="Never", description="MAX has scheduling priority over ordinary Pods; the host kubelet is outside Pod priority.")

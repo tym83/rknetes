@@ -835,6 +835,19 @@
                   "claimName": {
                     "type": "string"
                   },
+                  "volumeName": {
+                    "type": "string"
+                  },
+                  "selector": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "maxBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
                   "retentionDays": {
                     "type": "integer",
                     "minimum": 0

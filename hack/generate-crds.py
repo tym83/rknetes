@@ -40,7 +40,7 @@ kinds = {
     "Werewolf": ("werewolves", [], obj({"address": string, "selector": labels, "port": integer}, ["address", "selector", "port"])),
     "CallRestriction": ("callrestrictions", [], obj({"enabled": boolean})),
     "ForeignAgentPolicy": ("foreignagentpolicies", [], obj({"enabled": boolean, "digests": strings, "rewriteImages": labels, "resolveDigests": boolean, "foreignImages": strings, "insecureRegistries": strings, "registryMirrors": labels})),
-    "ArchivePolicy": ("archivepolicies", [], obj({"claimName": string, "retentionDays": integer, "capturePayload": boolean})),
+    "ArchivePolicy": ("archivepolicies", [], obj({"claimName": string, "volumeName": string, "selector": labels, "maxBytes": integer, "retentionDays": integer, "capturePayload": boolean})),
     "DataBoundaryPolicy": ("databoundarypolicies", [], obj({"selector": labels, "primaryService": string})),
     "SovereigntyDrill": ("sovereigntydrills", [], obj({"enabled": boolean, "foreignSelector": labels, "quarterly": boolean, "durationSeconds": integer})),
     "BloggerRegistration": ("bloggerregistrations", [], obj({"resource": string, "name": string, "registered": boolean, "threshold": integer})),

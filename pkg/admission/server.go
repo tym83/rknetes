@@ -89,6 +89,22 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				deny(out, "UnmarkedAdvertisement", "Успешное событие рекламирует образ или узел; требуется erid")
 			}
 		}
+	case "/archive":
+		patches, err := s.archive(r.Context(), req)
+		if err != nil {
+			deny(out, "ArchiveUnavailable", err.Error())
+			break
+		}
+		if len(patches) > 0 {
+			patch, err := json.Marshal(patches)
+			if err != nil {
+				deny(out, "InvalidPatch", err.Error())
+				break
+			}
+			out.Patch = base64.StdEncoding.EncodeToString(patch)
+			pt := "JSONPatch"
+			out.PatchType = &pt
+		}
 	case "/inoagent":
 		policies, err := s.C.List(r.Context(), "foreignagentpolicies", req.Namespace)
 		if err != nil {

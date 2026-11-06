@@ -99,7 +99,7 @@ func (c *Client) Apply(ctx context.Context, resource string, o *Object) error {
 			}
 		}
 	}
-	if reflect.DeepEqual(old.Object["spec"], o.Object["spec"]) && reflect.DeepEqual(old.Object["data"], o.Object["data"]) {
+	if reflect.DeepEqual(old.Object["spec"], o.Object["spec"]) && reflect.DeepEqual(old.Object["data"], o.Object["data"]) && reflect.DeepEqual(old.Object["rules"], o.Object["rules"]) && reflect.DeepEqual(old.Object["subjects"], o.Object["subjects"]) && reflect.DeepEqual(old.Object["roleRef"], o.Object["roleRef"]) {
 		return nil
 	}
 	o.SetResourceVersion(old.GetResourceVersion())
