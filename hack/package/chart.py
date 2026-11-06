@@ -60,7 +60,7 @@ crds = (root/'deploy/crds.yaml').read_text()
 (chart/'crds/rknetes.yaml').write_text(crds)
 crd_names = [json.loads(document)['metadata']['name'] for document in crds.split('\n---\n') if document.strip()]
 assert len(crd_names) == 17
-recipe = {'apiVersion': 'kubepkg.dev/v1', 'kind': 'Recipe', 'metadata': {'name': 'kuberoot-rknetes'}, 'spec': {'version': '0.1.0', 'build': 5, 'sources': {'rknetes': {'dir': 'charts/rknetes'}}, 'charts': {'rknetes': {'from': ['rknetes']}}, 'package': {'crds': crd_names, 'variants': [{'name': 'default', 'requires': [{'package': 'coredns', 'version': '~1.14'}], 'components': [{'name': 'rknetes', 'path': 'rknetes', 'install': {'namespace': 'rknet-system', 'releaseName': 'rknetes', 'privileged': True, 'upgradeCRDs': 'CreateReplace'}}]}]}}}
+recipe = {'apiVersion': 'kubepkg.dev/v1', 'kind': 'Recipe', 'metadata': {'name': 'kuberoot-rknetes'}, 'spec': {'version': '0.1.0', 'build': 6, 'sources': {'rknetes': {'dir': 'charts/rknetes'}}, 'charts': {'rknetes': {'from': ['rknetes']}}, 'package': {'crds': crd_names, 'variants': [{'name': 'default', 'requires': [{'package': 'coredns', 'version': '~1.14'}], 'components': [{'name': 'rknetes', 'path': 'rknetes', 'install': {'namespace': 'rknet-system', 'releaseName': 'rknetes', 'privileged': True, 'upgradeCRDs': 'CreateReplace'}}]}]}}}
 (output/'recipe.yaml').write_text(json.dumps(recipe, indent=2)+'\n')
 # The adoption allowlist contains only resources produced by this repository.
 adopt = [{'apiVersion': o['apiVersion'], 'kind': o['kind'], 'metadata': o['metadata']} for o in objects]
