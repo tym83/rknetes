@@ -8,7 +8,10 @@ PKG=/work/out/amd64/kubepkg
 ROOT=/work/package/rknetes
 mkdir -p /work/keys /work/out/packages /work/package/dist
 if [[ ! -f /work/keys/rknetes-index.key ]]; then "$PKG" repo keygen /work/keys/rknetes-index; fi
-runtime=$(k -n rknet-system get pods -l app=rknet-controller -o jsonpath='{.items[0].status.containerStatuses[0].imageID}')
+# Pinned in the repository. Reading it back from a running Pod is unreliable: the
+# node's imageID names whichever repository it last saw with that digest, and after
+# the import-substitution tests that is a lab loopback name nobody else can pull.
+runtime=$(cat /work/src/rknetes/hack/package/runtime-image.ref)
 [[ "$runtime" == *@sha256:* ]]
 names=()
 for source in /work/src/rknetes/cmd/*/main.go; do name=${source%/main.go}; names+=("${name##*/}"); done

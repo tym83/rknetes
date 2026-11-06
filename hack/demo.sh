@@ -43,10 +43,10 @@ run bytes 03-sovereign-16k 03-byte-policy 03-boundaries 03-api-streams
 run whitelist 04-whitelist 04-observe 04-ephemeral 04-werewolf 04-capacity 04-dependency-graph
 run tunnels 05-pigeon 05-pigeon-interface 05-tunnel-ladder 05-compliant
 run calls 06-calls 06-max 06-max-enrollment
-run import 07-origin 07-origin-resolution 08-goshran 08-artifact-chain \
+run import 07-origin 07-origin-resolution 08-goshran 08-goshran-country 08-artifact-chain \
   08-native-pulls 08-reinvocation 08-module-mirror 08-toolchain-mirror
 run storage 09-escrow-forever 09-key-refusal 09-first-write
-run regulation 10-drill 10-national-dns 10-presentation 11-erid \
+run regulation 10-drill 10-national-dns 10-presentation 10-ponyatno-kto 11-erid \
   11-watch-resources 17-agencies 17-agency-timeout
 # This one application crosses native pulls, real tunnels, self-block and
 # physical ENOSPC. It includes 09-payload-archive and performs repairs via MAX.

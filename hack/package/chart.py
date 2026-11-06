@@ -15,7 +15,7 @@ assert '@sha256:' in runtime_image
 chart = output/'charts/rknetes'
 (chart/'templates').mkdir(parents=True, exist_ok=True)
 (chart/'crds').mkdir(exist_ok=True)
-(chart/'Chart.yaml').write_text('apiVersion: v2\nname: rknetes\nversion: 0.1.0-5\nappVersion: "0.1.0"\ntype: application\ndescription: Scoped RKNetes controllers, admission and authenticated stream gateways\n')
+(chart/'Chart.yaml').write_text('apiVersion: v2\nname: rknetes\nversion: 0.1.0-6\nappVersion: "0.1.0"\ntype: application\ndescription: Scoped RKNetes controllers, admission and authenticated stream gateways\n')
 names = sorted([p.parent.name for p in (root/'cmd').glob('*/main.go')]+['tspu.o'])
 checksums = {name: hashlib.sha256((pathlib.Path('/work/out/rknetes')/name).read_bytes()).hexdigest() for name in names}
 (chart/'values.yaml').write_text(json.dumps({'binaryURL': binary_url, 'runtimeImage': runtime_image, 'artifactImage': pathlib.Path('/work/out/tools/lab-image.ref').read_text().strip(), 'sha256': checksums}, indent=2)+'\n')

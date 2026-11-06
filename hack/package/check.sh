@@ -19,7 +19,7 @@ wait_until current_binaries
 current_chart() {
   /work/bin/helm list --namespace rknet-system --kube-context admin@workshop -o json | python3 -c '
 import json,sys
-assert any(r["name"]=="rknetes" and r["chart"]=="rknetes-0.1.0-5" and r["status"]=="deployed" for r in json.load(sys.stdin))
+assert any(r["name"]=="rknetes" and r["chart"]=="rknetes-0.1.0-6" and r["status"]=="deployed" for r in json.load(sys.stdin))
 '
 }
 wait_until current_chart
@@ -54,4 +54,4 @@ evidence=${RK_PACKAGE_EVIDENCE:-/work/evidence/package}
 [[ "$evidence" == /work/evidence/* ]] || exit 2
 mkdir -p "$evidence"
 k get repository.kubepkg.dev/rknetes package.kubepkg.dev/kuberoot-rknetes -o yaml > "$evidence/installed.yaml"
-sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-5.tgz > "$evidence/sha256.txt"
+sha256sum /work/out/packages/index.yaml /work/out/packages/rknetes-0.1.0-6.tgz > "$evidence/sha256.txt"
