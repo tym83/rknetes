@@ -42,7 +42,7 @@ kinds = {
     "ForeignAgentPolicy": ("foreignagentpolicies", [], obj({"enabled": boolean, "digests": strings, "rewriteImages": labels, "resolveDigests": boolean, "foreignImages": strings, "insecureRegistries": strings, "registryMirrors": labels})),
     "ArchivePolicy": ("archivepolicies", [], obj({"claimName": string, "retentionDays": integer, "capturePayload": boolean})),
     "DataBoundaryPolicy": ("databoundarypolicies", [], obj({"selector": labels, "primaryService": string})),
-    "SovereigntyDrill": ("sovereigntydrills", [], obj({"enabled": boolean, "foreignSelector": labels})),
+    "SovereigntyDrill": ("sovereigntydrills", [], obj({"enabled": boolean, "foreignSelector": labels, "quarterly": boolean, "durationSeconds": integer})),
     "BloggerRegistration": ("bloggerregistrations", [], obj({"resource": string, "name": string, "registered": boolean, "threshold": integer})),
     "AdvertisingPolicy": ("advertisingpolicies", [], obj({"enabled": boolean})),
     "CoolingPolicy": ("coolingpolicies", [], obj({"nodeName": string, "durationSeconds": integer, "captchaURL": string, "captchaSHA256": string, "captchaSolved": boolean, "reason": string}, ["nodeName"])),

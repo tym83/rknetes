@@ -55,6 +55,8 @@ func Resource(name string) schema.GroupVersionResource {
 		return schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: name}
 	case "leases":
 		return schema.GroupVersionResource{Group: "coordination.k8s.io", Version: "v1", Resource: name}
+	case "roles", "rolebindings", "clusterroles", "clusterrolebindings":
+		return schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: name}
 	}
 	return schema.GroupVersionResource{Group: "rknetes.su", Version: "v1alpha1", Resource: name}
 }

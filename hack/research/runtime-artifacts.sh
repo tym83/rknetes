@@ -3,7 +3,7 @@
 set -euo pipefail
 source "$(dirname "$0")/../e2e/common.sh"
 cd /work/out/optional
-names=(pigeon)
+names=(pigeon drill-trigger)
 snapshot=$(sha256sum "${names[@]}" | sha256sum | cut -d' ' -f1)
 destination=/work/out/releases/$snapshot
 mkdir -p "$destination"

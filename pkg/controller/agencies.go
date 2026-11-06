@@ -39,6 +39,9 @@ func (r *Controller) Drill(ctx context.Context, ns string) error {
 	}
 	for i := range drills {
 		d := &drills[i]
+		if err := r.quarterly(ctx, d); err != nil {
+			return err
+		}
 		if !cluster.Bool(d.Object, "spec", "enabled") {
 			if err := r.C.R("ciliumnetworkpolicies", ns).Delete(ctx, "drill-"+d.GetName(), metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 				return err
