@@ -7,14 +7,22 @@ current_binaries() {
   k -n rknet-system get deployment/rknet-controller deployment/rknet-admission deployment/watch-office daemonset/maxlet -o json | python3 -c '
 import hashlib,json,pathlib,sys
 objects=json.load(sys.stdin)["items"]
+snapshot=pathlib.Path("/work/out/packages/binaries.sha256").read_text().strip()
 for obj in objects:
     name=obj["metadata"]["name"]
     expected=hashlib.sha256((pathlib.Path("/work/out/rknetes")/name).read_bytes()).hexdigest()
     command=obj["spec"]["template"]["spec"]["initContainers"][0]["command"]
-    if command[-1]!=expected: raise SystemExit(1)
+    if command[-1]!=expected or not command[-2].endswith("/releases/"+snapshot): raise SystemExit(1)
 '
 }
 wait_until current_binaries
+current_chart() {
+  /work/bin/helm list --namespace rknet-system --kube-context admin@workshop -o json | python3 -c '
+import json,sys
+assert any(r["name"]=="rknetes" and r["chart"]=="rknetes-0.1.0-5" and r["status"]=="deployed" for r in json.load(sys.stdin))
+'
+}
+wait_until current_chart
 for name in rknet-controller rknet-admission watch-office; do
   k -n rknet-system rollout status "deployment/$name" --timeout=180s
 done
@@ -31,6 +39,7 @@ k -n rknet-system get configmap runtime-artifacts -o json | python3 -c '
 import hashlib,json,pathlib,sys
 p=json.load(sys.stdin)["data"]
 assert "@sha256:" in p["image"]
+assert p["url"].endswith("/releases/"+pathlib.Path("/work/out/packages/binaries.sha256").read_text().strip())
 for name in ["pigeon","drill-trigger","archive-agent"]:
  assert p["sha256."+name]==hashlib.sha256((pathlib.Path("/work/out/rknetes")/name).read_bytes()).hexdigest()
 print("PASS: runtime helpers use the signed release hashes and immutable image")'
