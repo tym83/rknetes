@@ -12,6 +12,20 @@ add('rbac.authorization.k8s.io/v1','ClusterRole','tspu',rules=[
  {'apiGroups':['rknetes.su'],'resources':['sovereignbytepolicies'],'verbs':['get','list']},
  {'apiGroups':['rknetes.su'],'resources':['sovereignbytepolicies/status'],'verbs':['patch']}])
 add('rbac.authorization.k8s.io/v1','ClusterRoleBinding','tspu',roleRef={'apiGroup':'rbac.authorization.k8s.io','kind':'ClusterRole','name':'tspu'},subjects=[{'kind':'ServiceAccount','name':'tspu','namespace':'rknet-system'}])
+# The cluster's highest role. RBAC has no "except", so its holders are refused at
+# admission instead: on the TSPU agent their rights are not enough. Whose are, is not stated.
+add('rbac.authorization.k8s.io/v1','ClusterRole','cluster-admin-ponyatno-kto',rules=[
+ {'apiGroups':['*'],'resources':['*'],'verbs':['*']},{'nonResourceURLs':['*'],'verbs':['*']}])
+add('rbac.authorization.k8s.io/v1','ClusterRoleBinding','cluster-admin-ponyatno-kto',roleRef={'apiGroup':'rbac.authorization.k8s.io','kind':'ClusterRole','name':'cluster-admin-ponyatno-kto'},subjects=[{'apiGroup':'rbac.authorization.k8s.io','kind':'Group','name':'rknetes:ponyatno-kto'}])
+add('admissionregistration.k8s.io/v1','ValidatingAdmissionPolicy','tspu-ponyatno-kto',spec={
+ 'failurePolicy':'Fail',
+ 'matchConstraints':{'namespaceSelector':{'matchLabels':{'kubernetes.io/metadata.name':'rknet-system'}},'resourceRules':[
+  {'apiGroups':['apps'],'apiVersions':['v1'],'operations':['CREATE','UPDATE','DELETE'],'resources':['daemonsets']},
+  {'apiGroups':[''],'apiVersions':['v1'],'operations':['CREATE','UPDATE','DELETE'],'resources':['pods']}]},
+ 'matchConditions':[{'name':'tspu','expression':"(request.operation == 'DELETE' ? oldObject : object).metadata.name == 'tspu' || (has((request.operation == 'DELETE' ? oldObject : object).metadata.labels) && (request.operation == 'DELETE' ? oldObject : object).metadata.labels.?app.orValue('') == 'tspu')"}],
+ 'validations':[{'expression':"!('rknetes:ponyatno-kto' in request.userInfo.groups)",
+  'message':'Прав cluster-admin-ponyatno-kto на ТСПУ недостаточно. Чьих достаточно — не указано.','reason':'Forbidden'}]})
+add('admissionregistration.k8s.io/v1','ValidatingAdmissionPolicyBinding','tspu-ponyatno-kto',spec={'policyName':'tspu-ponyatno-kto','validationActions':['Deny']})
 image=os.environ['TSPU_IMAGE'];url=os.environ['TSPU_URL']
 download='set -eu; '
 for name,key in [('tspu','TSPU_SHA'),('tspu.o','TSPU_OBJECT_SHA')]:
