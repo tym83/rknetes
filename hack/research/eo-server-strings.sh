@@ -15,6 +15,8 @@ echo "\$ strings eo-server | grep -c -i kubernetes"
 echo "$d"
 echo "\$ strings kube-apiserver | grep -c -i kubernetes   # foreign, $version"
 echo "$f"
+echo "\$ file eo-server kube-apiserver"
+file "$domestic" "$work/kube-apiserver" | sed "s#$work/##; s#, BuildID[^,]*##"
 echo "Кормчий: $(strings "$domestic" | grep -c 'Кормчий' || true)"
 python3 - "$d" "$f" <<'PY'
 import sys

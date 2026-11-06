@@ -46,7 +46,7 @@ python3 "$work/vendor.py" 18092 "$work/withdrawn" & pids+=($!)
 printf 'entries:\n  postgresql:\n  - version: 16.0.0\n    urls: [http://127.0.0.1:18092/charts/postgresql-16.0.0.tgz]\n' > "$work/index.yaml"
 goshran --listen=127.0.0.1:18093 --upstream=http://127.0.0.1:18091 --index="$work/index.yaml" > "$work/goshran.log" 2>&1 & pids+=($!)
 for port in 18091 18092 18093; do
-  for _ in $(seq 1 30); do curl -s -o /dev/null "http://127.0.0.1:$port/" && break; sleep 0.5; done
+  for _ in $(seq 1 30); do curl -s -o /dev/null --interface 127.0.0.9 "http://127.0.0.1:$port/healthz" && break; sleep 0.5; done
 done
 
 pull() { curl -s -o /dev/null -w '%{http_code}' --interface "$1" "$2/v2/library/postgres/manifests/17"; }
@@ -84,7 +84,7 @@ curl -fsS http://127.0.0.1:18093/index.yaml | cmp - "$work/index.yaml"
 echo "  index.yaml still served unchanged by Goshran"
 code=$(curl -s -o /dev/null -w '%{http_code}' "$url"); echo "  chart $code"
 [[ "$code" == 410 ]]
-status=$(curl -s -w ' HTTP %{http_code}' http://127.0.0.1:18093/status); echo "  $status"
+status=$(curl -s -w ' HTTP %{http_code}' http://127.0.0.1:18093/status | tr -d '\n'); echo "  $status"
 [[ "$status" == *модернизацию*"HTTP 503" ]]
 curl -fsS http://127.0.0.1:18093/metrics | grep domestic_download_ratio
 echo 'PASS: the domestic registry broke the minute the foreign vendor left; it had been the vendor all along'
