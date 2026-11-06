@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import tarfile
 from urllib.parse import urlparse
+import urllib.request
 
 
 def digest(data):
@@ -33,12 +34,16 @@ def tar_bytes(entries):
     return output.getvalue()
 
 
-def prepare(directory, busybox):
+def prepare(directory, busybox, variant="", application=None):
     directory.mkdir(parents=True, exist_ok=True)
     # Deterministic, poorly compressible fixture bytes; no user or secret data.
-    payload = b''.join(hashlib.sha256(str(i).encode()).digest() for i in range(32768))
-    layer = tar_bytes([('bin/busybox', busybox.read_bytes(), 0o755), ('bin/sh', 'busybox', 0o777),
-                       ('bin/sleep', 'busybox', 0o777), ('payload', payload, 0o644)])
+    payload = b''.join(hashlib.sha256((variant+str(i)).encode()).digest() for i in range(32768))
+    loader=busybox.parent.parent/'lib/ld-musl-x86_64.so.1'
+    assert loader.is_file(), 'the fixture must include the native musl loader'
+    entries = [('lib/ld-musl-x86_64.so.1',loader.read_bytes(),0o755), ('lib/libc.musl-x86_64.so.1','ld-musl-x86_64.so.1',0o777), ('bin/busybox', busybox.read_bytes(), 0o755), ('bin/sh', 'busybox', 0o777),
+                       ('bin/sleep', 'busybox', 0o777), ('payload', payload, 0o644)]
+    if application:entries.append(('bin/shop',application.read_bytes(),0o755))
+    layer = tar_bytes(entries)
     compressed = gzip.compress(layer, mtime=0)
     config = json.dumps({'architecture': 'amd64', 'os': 'linux',
                          'config': {'Cmd': ['/bin/sleep', '3600']},
@@ -64,7 +69,7 @@ def prepare(directory, busybox):
 
 def serve(directory, role, cdn, port):
     parsed = urlparse(cdn)
-    if role == 'registry':
+    if role in ['registry','relay']:
         if parsed.scheme != 'http' or not parsed.hostname or ipaddress.ip_address(parsed.hostname) not in ipaddress.ip_network('10.42.0.0/16'):
             raise ValueError('registry redirects require an explicit nested lab Pod IP')
     subjects = json.loads((directory / 'subjects.json').read_text())
@@ -77,6 +82,18 @@ def serve(directory, role, cdn, port):
 
         def do_GET(self):
             path = urlparse(self.path).path
+            if role == 'relay' and path.startswith('/blobs/'):
+                try:
+                    with urllib.request.urlopen(cdn+path,timeout=120) as upstream:
+                        self.send_response(upstream.status)
+                        self.send_header('Content-Length',upstream.headers['Content-Length'])
+                        self.end_headers()
+                        while True:
+                            chunk=upstream.read(1000)
+                            if not chunk:break
+                            if self.command!='HEAD':self.wfile.write(chunk);self.wfile.flush()
+                except (OSError,TimeoutError):pass
+                return
             location, data, content_type, content_digest = None, b'', 'application/octet-stream', None
             if path in ['/healthz', '/v2/']:
                 data = b'ok' if path == '/healthz' else b'{}'
@@ -87,10 +104,12 @@ def serve(directory, role, cdn, port):
                 data = ('apiVersion: v1\nentries:\n  shop:\n  - apiVersion: v2\n    name: shop\n    version: 0.1.0\n'
                         f'    digest: {subjects["chartSHA256"]}\n    urls: ["{cdn}/charts/shop-0.1.0.tgz"]\n').encode()
                 content_type = 'application/yaml'
-            elif role == 'registry' and path.startswith('/v2/lab/shop/manifests/') and path.rsplit('/', 1)[1] in ['1', subjects['manifestDigest']]:
-                data = (directory / 'manifest.json').read_bytes()
+            elif role == 'registry' and path.startswith('/v2/lab/shop/manifests/') and path.rsplit('/', 1)[1] in ['1', subjects['manifestDigest'], '2', digest((directory/'manifest-2.json').read_bytes()) if (directory/'manifest-2.json').exists() else 'absent']:
+                version=path.rsplit('/',1)[1]
+                manifest='manifest-2.json' if version=='2' or ((directory/'manifest-2.json').exists() and version==digest((directory/'manifest-2.json').read_bytes())) else 'manifest.json'
+                data = (directory / manifest).read_bytes()
                 content_type = 'application/vnd.oci.image.manifest.v1+json'
-                content_digest = subjects['manifestDigest']
+                content_digest = digest(data)
             elif role == 'registry' and path.startswith('/v2/lab/shop/blobs/'):
                 name = path.rsplit('/', 1)[1]
                 if not (directory / name.replace(':', '-')).is_file():
@@ -130,11 +149,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--directory', type=Path, required=True)
     parser.add_argument('--prepare', type=Path, metavar='BUSYBOX')
-    parser.add_argument('--role', choices=['registry', 'cdn'], default='cdn')
+    parser.add_argument('--variant', default='')
+    parser.add_argument('--application', type=Path)
+    parser.add_argument('--role', choices=['registry', 'cdn', 'relay'], default='cdn')
     parser.add_argument('--cdn', default=os.environ.get('CDN_URL', ''))
     parser.add_argument('--port', type=int, default=8080)
     args = parser.parse_args()
     if args.prepare:
-        prepare(args.directory, args.prepare)
+        prepare(args.directory, args.prepare,args.variant,args.application)
     else:
         serve(args.directory, args.role, args.cdn, args.port)

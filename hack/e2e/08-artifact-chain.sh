@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source "$(dirname "$0")/common.sh"
-NS=lab-artifact-clients
-SERVERS=lab-artifact-services
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+NS=${RK_ARTIFACT_CLIENTS:-lab-artifact-clients}
+SERVERS=${RK_ARTIFACT_SERVERS:-lab-artifact-services}
 new_namespace "$NS"
 new_namespace "$SERVERS"
 k label namespace "$NS" pod-security.kubernetes.io/enforce=privileged
@@ -10,11 +10,22 @@ start_lab_controller
 trap stop_lab_controller EXIT
 IMAGE=$(cat /work/out/tools/lab-image.ref)
 [[ "$IMAGE" == 10.244.8.11:5000/rknetes-lab-tools@sha256:* ]] || exit 2
-fixture_dir=/work/tmp/artifact-fixture
+fixture_dir=${RK_ARTIFACT_DIRECTORY:-/work/tmp/artifact-fixture}
+case "$fixture_dir" in /work/tmp/artifact-fixture|/work/tmp/composed-artifacts) ;; *) exit 2 ;; esac
+rm -rf -- "$fixture_dir"
 mkdir -p "$fixture_dir" /work/out/fixtures
-python3 hack/fixtures/artifacts.py --directory "$fixture_dir" --prepare /work/sbom-roots/77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64/bin/busybox
-tar -czf /work/out/fixtures/artifacts.tar.gz -C "$fixture_dir" .
-SHA=$(sha256sum /work/out/fixtures/artifacts.tar.gz | cut -d' ' -f1)
+app_args=()
+if [[ -n "${RK_ARTIFACT_APPLICATION:-}" ]]; then app_args=(--application "$RK_ARTIFACT_APPLICATION"); fi
+python3 hack/fixtures/artifacts.py --directory "$fixture_dir" --prepare /work/sbom-roots/77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64/bin/busybox --variant "${RK_ARTIFACT_VARIANT:-}" "${app_args[@]}"
+if [[ "${RK_ARTIFACT_TWO_VERSIONS:-}" == 1 ]]; then
+ python3 hack/fixtures/artifacts.py --directory "$fixture_dir/second" --prepare /work/sbom-roots/77599664438d1726c761be12c7180a6fa0c9c9b373f3b5632c814dc15b0f0f64/bin/busybox --variant "${RK_ARTIFACT_VARIANT:-}-second" "${app_args[@]}"
+ cp "$fixture_dir"/second/sha256-* "$fixture_dir/"
+ cp "$fixture_dir/second/manifest.json" "$fixture_dir/manifest-2.json"
+ rm -rf -- "$fixture_dir/second"
+fi
+ARCHIVE_NAME=artifacts-$SERVERS.tar.gz
+tar -czf /work/out/fixtures/$ARCHIVE_NAME -C "$fixture_dir" .
+SHA=$(sha256sum /work/out/fixtures/$ARCHIVE_NAME | cut -d' ' -f1)
 k -n "$SERVERS" create configmap artifact-server --from-file=artifacts.py=hack/fixtures/artifacts.py
 server() {
  local name=$1 role=$2 cdn=${3:-}
@@ -27,7 +38,7 @@ spec:
   initContainers:
   - name: files
     image: $IMAGE
-    command: [sh, -ec, "curl -fsS http://10.244.8.11:8080/fixtures/artifacts.tar.gz -o /data/input.tar.gz; echo '$SHA  /data/input.tar.gz' | sha256sum -c -; tar -xzf /data/input.tar.gz -C /data"]
+    command: [sh, -ec, "curl -fsS http://10.244.8.11:8080/fixtures/$ARCHIVE_NAME -o /data/input.tar.gz; echo '$SHA  /data/input.tar.gz' | sha256sum -c -; tar -xzf /data/input.tar.gz -C /data; rm /data/input.tar.gz"]
     volumeMounts: [{name: data, mountPath: /data}]
   containers:
   - name: server
@@ -36,12 +47,17 @@ spec:
     env: [{name: CDN_URL, value: '$cdn'}]
     readinessProbe: {httpGet: {path: /healthz, port: 8080}, periodSeconds: 1}
     volumeMounts: [{name: data, mountPath: /data}, {name: script, mountPath: /script}]
-  volumes: [{name: data, emptyDir: {sizeLimit: 32Mi}}, {name: script, configMap: {name: artifact-server}}]
+  volumes: [{name: data, emptyDir: {sizeLimit: 64Mi}}, {name: script, configMap: {name: artifact-server}}]
 YAML
  k -n "$SERVERS" wait --for=condition=Ready "pod/$name" --timeout=180s
 }
 server cdn cdn
 CDN=http://$(k -n "$SERVERS" get pod cdn -o jsonpath='{.status.podIP}'):8080
+CDN_ORIGIN=$CDN
+if [[ "${RK_ARTIFACT_CDN_PROXY:-}" == 1 ]]; then
+ server relay relay "$CDN"
+ CDN=http://$(k -n "$SERVERS" get pod relay -o jsonpath='{.status.podIP}'):8080
+fi
 server registry registry "$CDN"
 REGISTRY=http://$(k -n "$SERVERS" get pod registry -o jsonpath='{.status.podIP}'):8080
 k -n "$SERVERS" exec registry -- curl -fsS "$REGISTRY/index.yaml" > /work/tmp/artifact-index.yaml
@@ -96,6 +112,7 @@ YAML
 }
 pull() { k -n "$NS" exec client -- timeout 25s ctr --address /runtime/containerd.sock --namespace lab images pull --local --plain-http --snapshotter native "$GOSHRAN/lab/shop:1"; }
 chart() { k -n "$NS" exec client -- timeout 20s helm pull shop --repo "http://$GOSHRAN" --destination /tmp; }
+if [[ "${RK_ARTIFACT_PREPARE_ONLY:-}" == 1 ]]; then return 0 2>/dev/null || exit 0; fi
 reader
 pull
 chart

@@ -46,6 +46,10 @@ for node in $(k get nodes -o jsonpath='{.items[*].metadata.name}'); do
   --overrides="{\"spec\":{\"nodeName\":\"$node\",\"tolerations\":[{\"operator\":\"Exists\"}]}}"
 done
 k -n "$NS" wait --for=condition=Ready pods -l run --timeout=180s
+for node in $(k get nodes -o jsonpath='{.items[*].metadata.name}'); do
+ k -n "$NS" exec "pull-$node" -- /bin/busybox echo image-executed-on-native-kubelet
+done
+sleep 3
 k -n "$NS" get pods -o json > /work/tmp/goshran-native-pulls.json
 python3 - <<'PY'
 import json
@@ -55,7 +59,8 @@ assert len(pods)==3,len(pods)
 assert len({p['spec']['nodeName'] for p in pods})==3
 for p in pods:
  assert p['spec']['containers'][0]['image']=='127.0.0.1:5007/lab/shop:1'
- actual=p['status']['containerStatuses'][0]['imageID']
+ status=p['status']['containerStatuses'][0];assert status['ready'] and status['restartCount']==0;assert 'running' in status['state']
+ actual=status['imageID']
  assert actual.endswith(subjects['manifestDigest']),(p['metadata']['name'],actual)
  print('PASS native kubelet pull:',p['spec']['nodeName'],actual)
 PY
