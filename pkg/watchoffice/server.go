@@ -3,29 +3,27 @@ package watchoffice
 
 import (
 	"context"
-	"fmt"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"regexp"
+	"rknetes.su/rknetes/pkg/cluster"
 	"strings"
 	"sync"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/rest"
-	"rknetes.su/rknetes/pkg/cluster"
 )
 
-var path = regexp.MustCompile(`^/api/v1/namespaces/([a-z0-9-]+)/configmaps$`)
+var resourcePath = regexp.MustCompile(`^/(api/([a-z0-9]+)|apis/([a-z0-9.-]+)/([a-z0-9]+))/namespaces/([a-z0-9-]+)/([a-z0-9-]+)(?:/([a-z0-9.-]+))?$`)
+var discoveryPath = regexp.MustCompile(`^(/api(/v1)?|/apis(/[a-z0-9.-]+(/[a-zA-Z0-9]+)?)?|/version|/openapi/(v2|v3)(/apis/[a-z0-9.-]+/[a-zA-Z0-9]+)?)$`)
 
 type Server struct {
 	C       *cluster.Client
 	Proxy   *httputil.ReverseProxy
 	mu      sync.Mutex
+	persist sync.Mutex
 	next    uint64
 	watches map[string]map[uint64]context.CancelFunc
+	peaks   map[string]int64
 }
 
 func New(c *cluster.Client) (*Server, error) {
@@ -50,110 +48,18 @@ func New(c *cluster.Client) (*Server, error) {
 				r.Header.Del(key)
 			}
 		}
+		r.Header.Set("Accept", "application/json")
 	}
-	return &Server{C: c, Proxy: p, watches: map[string]map[uint64]context.CancelFunc{}}, nil
+	return &Server{C: c, Proxy: p, watches: map[string]map[uint64]context.CancelFunc{}, peaks: map[string]int64{}}, nil
 }
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.TLS == nil || len(r.TLS.VerifiedChains) == 0 {
 		http.Error(w, "client certificate required", 401)
 		return
 	}
-	m := path.FindStringSubmatch(r.URL.Path)
-	name := strings.TrimPrefix(r.URL.Query().Get("fieldSelector"), "metadata.name=")
-	if r.Method != "GET" || m == nil || r.URL.Query().Get("watch") != "true" || !strings.HasPrefix(r.URL.Query().Get("fieldSelector"), "metadata.name=") || name == "" || strings.ContainsAny(name, "=,/") {
-		http.Error(w, "an individual ConfigMap watch with metadata.name is required", 400)
+	if r.Method == "GET" && discoveryPath.MatchString(r.URL.Path) {
+		s.Proxy.ServeHTTP(w, r)
 		return
 	}
-	ns, err := s.C.R("namespaces", "").Get(r.Context(), m[1], metav1.GetOptions{})
-	if err != nil || ns.GetLabels()["rknetes.su/lab"] != "true" {
-		http.Error(w, "lab namespace required", 403)
-		return
-	}
-	cert := r.TLS.VerifiedChains[0][0]
-	groups := []interface{}{}
-	for _, g := range cert.Subject.Organization {
-		groups = append(groups, g)
-	}
-	sar := &unstructured.Unstructured{Object: cluster.Map{"apiVersion": "authorization.k8s.io/v1", "kind": "SubjectAccessReview", "spec": cluster.Map{"user": cert.Subject.CommonName, "groups": groups, "resourceAttributes": cluster.Map{"namespace": m[1], "verb": "watch", "resource": "configmaps", "name": name}}}}
-	result, err := s.C.Dynamic.Resource(schema.GroupVersionResource{Group: "authorization.k8s.io", Version: "v1", Resource: "subjectaccessreviews"}).Create(r.Context(), sar, metav1.CreateOptions{})
-	if err != nil || !cluster.Bool(result.Object, "status", "allowed") {
-		http.Error(w, "watch forbidden", 403)
-		return
-	}
-	registrations, err := s.C.List(r.Context(), "bloggerregistrations", m[1])
-	if err != nil {
-		http.Error(w, err.Error(), 503)
-		return
-	}
-	var registration *cluster.Object
-	threshold := int64(10000)
-	registered := false
-	previousPeak := int64(0)
-	for i := range registrations {
-		p := &registrations[i]
-		if cluster.String(p.Object, "spec", "resource") == "configmaps" && cluster.String(p.Object, "spec", "name") == name {
-			registration = p
-			threshold = cluster.Int(p.Object, 10000, "spec", "threshold")
-			registered = cluster.Bool(p.Object, "spec", "registered")
-			previousPeak = cluster.Int(p.Object, 0, "status", "observedConcurrentWatches")
-			break
-		}
-	}
-	key := m[1] + "/" + name
-	ctx, cancel := context.WithCancel(r.Context())
-	defer cancel()
-	s.mu.Lock()
-	if s.watches[key] == nil {
-		s.watches[key] = map[uint64]context.CancelFunc{}
-	}
-	s.next++
-	id := s.next
-	s.watches[key][id] = cancel
-	count := len(s.watches[key])
-	peak := max(previousPeak, int64(count))
-	// Closing the audience must not erase the registration obligation.
-	blocked := !registered && peak > threshold
-	if blocked {
-		for _, stop := range s.watches[key] {
-			stop()
-		}
-	}
-	s.mu.Unlock()
-	defer func() {
-		s.mu.Lock()
-		delete(s.watches[key], id)
-		if len(s.watches[key]) == 0 {
-			delete(s.watches, key)
-		}
-		s.mu.Unlock()
-	}()
-	if blocked {
-		if registration == nil {
-			registration = cluster.NewObject("rknetes.su/v1alpha1", "BloggerRegistration", m[1], name, cluster.Map{"resource": "configmaps", "name": name, "registered": false, "threshold": threshold})
-			if err := s.C.Apply(r.Context(), "bloggerregistrations", registration); err != nil {
-				http.Error(w, err.Error(), 503)
-				return
-			}
-		}
-		if err := s.C.Status(r.Context(), "bloggerregistrations", registration, cluster.Map{"observedConcurrentWatches": peak, "conditions": []interface{}{cluster.Condition("ReadAllowed", "False", "UnregisteredBlogger", "Registration remains required after active watches close")}}); err != nil {
-			http.Error(w, err.Error(), 503)
-			return
-		}
-		http.Error(w, fmt.Sprintf("UnavailableForLegalReasons: recorded audience %d exceeds %d; registration required", peak, threshold), 451)
-		return
-	}
-	if registered && registration != nil {
-		conditions, _, _ := unstructured.NestedSlice(registration.Object, "status", "conditions")
-		for _, condition := range conditions {
-			c, ok := condition.(map[string]interface{})
-			if ok && c["type"] == "ReadAllowed" && c["status"] == "False" {
-				if err := s.C.Status(r.Context(), "bloggerregistrations", registration, cluster.Map{"conditions": []interface{}{cluster.Condition("ReadAllowed", "True", "Registered", "Registered channel watches are permitted")}}); err != nil {
-					http.Error(w, err.Error(), 503)
-					return
-				}
-				break
-			}
-		}
-	}
-	s.Proxy.ServeHTTP(w, r.WithContext(ctx))
+	s.serveResource(w, r)
 }

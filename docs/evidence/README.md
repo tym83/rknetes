@@ -1,0 +1,2 @@
+
+`generic-watches.tar.gz` contains watch-resources-2 (exit0) and the retained first failure. Real core/apps/custom watches include selector collections and an object created after two subscriptions. A Cilium policy denies the client native API access; the gateway requires registration for subsequent GET/list reads. The first failure was an invalid SubjectAccessReview metadata field, removed before the passing run.

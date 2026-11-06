@@ -33,6 +33,7 @@ func TestRegistrationSurvivesDisconnectAndGatewayRestart(t *testing.T) {
 	registration.Object["status"] = cluster.Map{"observedConcurrentWatches": int64(4)}
 	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
 		cluster.Resource("bloggerregistrations"): "BloggerRegistrationList",
+		cluster.Resource("configmaps"):           "ConfigMapList",
 	}, ns, registration)
 	client.PrependReactor("create", "subjectaccessreviews", func(ktesting.Action) (bool, runtime.Object, error) {
 		response := cluster.NewObject("authorization.k8s.io/v1", "SubjectAccessReview", "", "allowed", nil)
