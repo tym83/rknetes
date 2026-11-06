@@ -4,7 +4,7 @@
 
 The delivery contains the RKNetes source, Apache-2.0 licence, kuberoot distribution overlay, structural CRDs, Go binaries and stand scripts. It is an experimental laboratory distribution. Describe only capabilities backed by the release's test artefacts.
 
-Installation on the workshop stand uses one `rknetes` Tenant, its builder and three nested VMs. Run `hack/kuberoot.sh build amd64`, build boot media with the documented CIDRs, and create the VMs with `hack/workshop/nodes.sh`. Installation erases only each newly created VM's empty system disk. `hack/stand/bootstrap.sh` installs kuberoot and Cilium; `hack/stand/install.sh` installs the add-ons after checking the nested-cluster marker. The deployment profile leaves ordinary namespaces outside the lab admission selectors. Store credentials outside the release archive.
+Installation on the workshop stand uses one `rknetes` Tenant, its builder and three nested VMs. The entry point is `hack/workshop/up.sh`; [stand operations](../stand.md) documents its guarded installation and upgrade paths. It prepares pinned tools and runtime artifacts, builds and signs the native image in the tenant, installs only newly created VMs' empty system disks, joins the nodes, installs Cilium and applies the signed add-on package. An existing primary stand is not reinstalled. The nested-cluster marker and lab namespace selectors bound the experiments. Credentials remain outside release archives.
 
 For each delivered release record [SUPPORTED ARCHITECTURES], [CPU/MEMORY/DISK MINIMA], [TESTED PLATFORMS], [INSTALLATION LOG], [E2E LOGS] and [UPSTREAM CONFORMANCE ARTEFACTS]. Do not substitute the number requested in the concept for the actual conformance result.
 
