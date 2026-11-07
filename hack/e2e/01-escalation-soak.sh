@@ -46,8 +46,10 @@ while true; do
     echo 'node stage; neighbour denied, remote reachable'
   elif (( elapsed >= 4810 )); then
     has_cidr 10.42.0.0/16
-    assert_blocked "http://$NEIGHBOUR:8080"
-    assert_blocked "http://$REMOTE:8080"
+    # The status records the pool CIDR when the policy is written; Cilium applies
+    # it shortly after. Allow the same bounded wait as every other enforcement check.
+    wait_until assert_blocked "http://$NEIGHBOUR:8080"
+    wait_until assert_blocked "http://$REMOTE:8080"
     echo 'pool stage; both innocent applications denied'
     break
   else
