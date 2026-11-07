@@ -15,7 +15,7 @@ assert '@sha256:' in runtime_image
 chart = output/'charts/rknetes'
 (chart/'templates').mkdir(parents=True, exist_ok=True)
 (chart/'crds').mkdir(exist_ok=True)
-(chart/'Chart.yaml').write_text('apiVersion: v2\nname: rknetes\nversion: 0.1.0-6\nappVersion: "0.1.0"\ntype: application\ndescription: Scoped RKNetes controllers, admission and authenticated stream gateways\n')
+(chart/'Chart.yaml').write_text('apiVersion: v2\nname: rknetes\nversion: 0.1.0-7\nappVersion: "0.1.0"\ntype: application\ndescription: Scoped RKNetes controllers, admission and authenticated stream gateways\n')
 names = sorted([p.parent.name for p in (root/'cmd').glob('*/main.go')]+['tspu.o'])
 checksums = {name: hashlib.sha256((pathlib.Path('/work/out/rknetes')/name).read_bytes()).hexdigest() for name in names}
 (chart/'values.yaml').write_text(json.dumps({'binaryURL': binary_url, 'runtimeImage': runtime_image, 'artifactImage': pathlib.Path('/work/out/tools/lab-image.ref').read_text().strip(), 'sha256': checksums}, indent=2)+'\n')
@@ -60,7 +60,7 @@ crds = (root/'deploy/crds.yaml').read_text()
 (chart/'crds/rknetes.yaml').write_text(crds)
 crd_names = [json.loads(document)['metadata']['name'] for document in crds.split('\n---\n') if document.strip()]
 assert len(crd_names) == 17
-recipe = {'apiVersion': 'kubepkg.dev/v1', 'kind': 'Recipe', 'metadata': {'name': 'kuberoot-rknetes'}, 'spec': {'version': '0.1.0', 'build': 6, 'sources': {'rknetes': {'dir': 'charts/rknetes'}}, 'charts': {'rknetes': {'from': ['rknetes']}}, 'package': {'crds': crd_names, 'variants': [{'name': 'default', 'requires': [{'package': 'coredns', 'version': '~1.14'}], 'components': [{'name': 'rknetes', 'path': 'rknetes', 'install': {'namespace': 'rknet-system', 'releaseName': 'rknetes', 'privileged': True, 'upgradeCRDs': 'CreateReplace'}}]}]}}}
+recipe = {'apiVersion': 'kubepkg.dev/v1', 'kind': 'Recipe', 'metadata': {'name': 'kuberoot-rknetes'}, 'spec': {'version': '0.1.0', 'build': 7, 'sources': {'rknetes': {'dir': 'charts/rknetes'}}, 'charts': {'rknetes': {'from': ['rknetes']}}, 'package': {'crds': crd_names, 'variants': [{'name': 'default', 'requires': [{'package': 'coredns', 'version': '~1.14'}], 'components': [{'name': 'rknetes', 'path': 'rknetes', 'install': {'namespace': 'rknet-system', 'releaseName': 'rknetes', 'privileged': True, 'upgradeCRDs': 'CreateReplace'}}]}]}}}
 (output/'recipe.yaml').write_text(json.dumps(recipe, indent=2)+'\n')
 # The adoption allowlist contains only resources produced by this repository.
 adopt = [{'apiVersion': o['apiVersion'], 'kind': o['kind'], 'metadata': o['metadata']} for o in objects]
