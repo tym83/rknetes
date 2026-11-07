@@ -1,0 +1,601 @@
+[
+  {
+    "archive": "byte-boundaries.tar.gz",
+    "sha256": "d2ad00408ff63bd6b3fc07cf0d32b4d4fd362947521adf9bd2dab72aacdcc7f7",
+    "bytes": 1188,
+    "topLevelEntries": [
+      "byte-boundaries-1"
+    ]
+  },
+  {
+    "archive": "byte-policy.tar.gz",
+    "sha256": "75fd029cfe93bdf1207c333edc942d343b28dd2a2933eee37e0f08a77bf08715",
+    "bytes": 1556,
+    "topLevelEntries": [
+      "byte-policy-1"
+    ]
+  },
+  {
+    "archive": "calls-streams.tar.gz",
+    "sha256": "096995a38d062345de0be3e15e3e1ff8e3f53c23fd5f451ff717dd4c513452e8",
+    "bytes": 10034,
+    "topLevelEntries": [
+      "calls-final-preflight"
+    ]
+  },
+  {
+    "archive": "cleanroom.tar.gz",
+    "sha256": "20605d512f0e0c450333039ee11f12ce4e2641f7a67df32d1ee8092b1aed24f5",
+    "bytes": 15845,
+    "topLevelEntries": [
+      "cleanroom-package",
+      "cleanroom-provision",
+      "demo-cleanroom-1",
+      "demo-cleanroom-2"
+    ]
+  },
+  {
+    "archive": "composed-first-attempts.tar.gz",
+    "sha256": "1bd22e1650e6c39eab47a742c72f1a151b8ea96d238a99e04a3ec665f63d2c25",
+    "bytes": 75377,
+    "topLevelEntries": [
+      "composed-shop-1",
+      "composed-shop-2",
+      "composed-shop-3",
+      "composed-shop-4",
+      "composed-shop-5",
+      "composed-shop-6",
+      "composed-shop-7",
+      "composed-shop-8",
+      "composed-shop-9"
+    ]
+  },
+  {
+    "archive": "composed-shop.tar.gz",
+    "sha256": "986f8df44101af3e350a3d1dffc355746e4d53b46f13489062af4901f5114a39",
+    "bytes": 15139,
+    "topLevelEntries": [
+      "composed-shop-10"
+    ]
+  },
+  {
+    "archive": "conformance-final3.tar.gz",
+    "sha256": "9573ca544833613bc4fca97246c1815cbcf4cbd513abb5f0816cfc976858d538",
+    "bytes": 63556,
+    "topLevelEntries": [
+      "conformance-final3"
+    ]
+  },
+  {
+    "archive": "conformance-run4.tar.gz",
+    "sha256": "b48eac85321787920fc1bc15413eb9fef8690ef94ede442febaae891ece15819",
+    "bytes": 66340,
+    "topLevelEntries": [
+      "conformance-run4"
+    ]
+  },
+  {
+    "archive": "conformance-run5.tar.gz",
+    "sha256": "d13be29c59235fb11d5fe883ddc3a09f5d0c7f4f0e86eed2d76fafff39471ea8",
+    "bytes": 63587,
+    "topLevelEntries": [
+      "conformance-run5"
+    ]
+  },
+  {
+    "archive": "demo-final-1.tar.gz",
+    "sha256": "7dcd873b76b707271955023ba8b09ac9a8d32d6e19e13dfea1768091cba4fcf1",
+    "bytes": 17099,
+    "topLevelEntries": [
+      "demo-final-1",
+      "demo-final-1-preparation"
+    ]
+  },
+  {
+    "archive": "demo-final-3.tar.gz",
+    "sha256": "9f9fb629b8569b64f788844fcf06c515794cf8a99e7d4da4fa3de03c5dd26877",
+    "bytes": 169501,
+    "topLevelEntries": [
+      "demo-final-3",
+      "demo-final-3-bytes",
+      "demo-final-3-calls",
+      "demo-final-3-composed",
+      "demo-final-3-escalation-soak",
+      "demo-final-3-import",
+      "demo-final-3-measurements",
+      "demo-final-3-preparation",
+      "demo-final-3-registry",
+      "demo-final-3-regulation",
+      "demo-final-3-storage",
+      "demo-final-3-tunnels",
+      "demo-final-3-watch-scale",
+      "demo-final-3-whitelist"
+    ]
+  },
+  {
+    "archive": "demo-native-1.tar.gz",
+    "sha256": "1c857673ecbb1dc26a912a2f8fc77d327cf6de793937f3f9e75ab1437ed285f6",
+    "bytes": 5477,
+    "topLevelEntries": [
+      "demo-native-1"
+    ]
+  },
+  {
+    "archive": "demo-native-2.tar.gz",
+    "sha256": "201c47f3fd1e18e58e7dd76ef2329cdc3031eab2caa4ee0754d133994accd063",
+    "bytes": 6242,
+    "topLevelEntries": [
+      "demo-native-2"
+    ]
+  },
+  {
+    "archive": "demo-native-3.tar.gz",
+    "sha256": "5986a5ed58436d27111c0e1f13c48ad552d346053d877680cc0afb040376954f",
+    "bytes": 6387,
+    "topLevelEntries": [
+      "demo-native-3"
+    ]
+  },
+  {
+    "archive": "dependency-graph.tar.gz",
+    "sha256": "931b8efd448e696b9223f33c553bb6c5b3bd91be3a81352b8bae3142db5cbdc5",
+    "bytes": 1024,
+    "topLevelEntries": [
+      "dependency-graph-1"
+    ]
+  },
+  {
+    "archive": "escalation-soak-rerun.tar.gz",
+    "sha256": "bae1fc12c8e468ecca44ecd0389c26dd8121124aa681bab4a2be57c9f1d171c6",
+    "bytes": 12107,
+    "topLevelEntries": [
+      "demo-final-3-escalation-soak-rerun"
+    ]
+  },
+  {
+    "archive": "final-attempts-native10.tar.gz",
+    "sha256": "38ca27b472b9e083ec9c82568493636a3c291974d30caebb12e0d3fc88f67aaa",
+    "bytes": 158025,
+    "topLevelEntries": [
+      "demo-final-2",
+      "demo-final-2-bytes",
+      "demo-final-2-calls",
+      "demo-final-2-composed",
+      "demo-final-2-escalation-soak",
+      "demo-final-2-import",
+      "demo-final-2-measurements",
+      "demo-final-2-preparation",
+      "demo-final-2-registry",
+      "demo-final-2-regulation",
+      "demo-final-2-storage",
+      "demo-final-2-tunnels",
+      "demo-final-2-watch-scale",
+      "demo-final-2-whitelist",
+      "native10-install"
+    ]
+  },
+  {
+    "archive": "final-validation.tar.gz",
+    "sha256": "7d07383468019e3a69408478db20bc7319c34e7221e825697e73652f84f933d0",
+    "bytes": 3449,
+    "topLevelEntries": [
+      "agency-timeout-1",
+      "escalation-soak-1",
+      "final-state"
+    ]
+  },
+  {
+    "archive": "generic-watches.tar.gz",
+    "sha256": "698108f82db1d909b5a5d1a7680d44b341d63d9d7cae4e5ec45d7e75ef7ff161",
+    "bytes": 1199,
+    "topLevelEntries": [
+      "watch-resources-1",
+      "watch-resources-2"
+    ]
+  },
+  {
+    "archive": "goshran-country.tar.gz",
+    "sha256": "f41781507957f4aaa54b654e87aee4ced170310b88f17c1fa44409b48a1b607c",
+    "bytes": 1273,
+    "topLevelEntries": [
+      "jokes-eo-strings",
+      "jokes-goshran-country"
+    ]
+  },
+  {
+    "archive": "import-tools.tar.gz",
+    "sha256": "06e8724a0f146bce46a1b3bc77f92df4ad9dffda12b9f67e1fb6b2cad3f9e70f",
+    "bytes": 50458,
+    "topLevelEntries": [
+      "import-tools",
+      "module-mirror-1",
+      "toolchain-mirror-1"
+    ]
+  },
+  {
+    "archive": "inventory-final.tar.gz",
+    "sha256": "be0f90e4456418311662b9aac019506e4626645e5c405de1d2af57fbadcc869e",
+    "bytes": 947131,
+    "topLevelEntries": [
+      "provenance",
+      "sbom"
+    ]
+  },
+  {
+    "archive": "inventory-native11.tar.gz",
+    "sha256": "8cd0d5e6efd7a5ee0a2d9a71520f41ce482afd110bc45110e32189d8c87344f3",
+    "bytes": 947432,
+    "topLevelEntries": [
+      "provenance",
+      "sbom"
+    ]
+  },
+  {
+    "archive": "inventory-native6.tar.gz",
+    "sha256": "debb0a258fd8c400b09197b4f46742c43b7c4317b9f2e1dbc2b999b3b975e818",
+    "bytes": 562040,
+    "topLevelEntries": [
+      "provenance",
+      "sbom"
+    ]
+  },
+  {
+    "archive": "inventory-native7.tar.gz",
+    "sha256": "977f2ba52238330463fe540226133aacaecc5475acd44285af804f73f98bb618",
+    "bytes": 946361,
+    "topLevelEntries": [
+      "provenance",
+      "sbom"
+    ]
+  },
+  {
+    "archive": "inventory-native8.tar.gz",
+    "sha256": "0c8dcc1d8435ea0d9b145e2e87b7b8f32735809f8570fb77107b9d2c97dced83",
+    "bytes": 947269,
+    "topLevelEntries": [
+      "provenance",
+      "sbom"
+    ]
+  },
+  {
+    "archive": "key-refusal.tar.gz",
+    "sha256": "08577798089ff3305479779c06e413560aed63f7ce59739948bc56e7261790a9",
+    "bytes": 725,
+    "topLevelEntries": [
+      "key-refusal-1"
+    ]
+  },
+  {
+    "archive": "kine-provenance.tar.gz",
+    "sha256": "f2b7f66bd7344ab09f396dfc47b2d6b5d66abd7e311d67f992535bedf77212d3",
+    "bytes": 10674,
+    "topLevelEntries": [
+      "kine-first",
+      "kine-source"
+    ]
+  },
+  {
+    "archive": "licences-final.tar.gz",
+    "sha256": "cf794cd8d49f650bc08277843974d6e10676715bdd88a05cbdf1e677891fac3c",
+    "bytes": 357647,
+    "topLevelEntries": [
+      "licences-native9"
+    ]
+  },
+  {
+    "archive": "licences-native11.tar.gz",
+    "sha256": "fd6ecf6ab50dfd0883c28dfb488f7f7b5480e0596778547284a0ed1ac13e51f0",
+    "bytes": 357729,
+    "topLevelEntries": [
+      "licences-native11"
+    ]
+  },
+  {
+    "archive": "licences-native6.tar.gz",
+    "sha256": "eca02330338daff3eb3b5ef76191dc7aea26806e0cea96627b2d4773e7b52a21",
+    "bytes": 81030,
+    "topLevelEntries": [
+      "licences-native6"
+    ]
+  },
+  {
+    "archive": "licences-native7.tar.gz",
+    "sha256": "50c662672182812b602913493f1df7d2fa6d55abfe3459d4a5e1ac95c7927e97",
+    "bytes": 460178,
+    "topLevelEntries": [
+      "licences-final"
+    ]
+  },
+  {
+    "archive": "licences-native8.tar.gz",
+    "sha256": "9849e5d2443385aea4057a11b747b4f8aca4d5862897a25fdc4f2c44cb3ac47c",
+    "bytes": 357642,
+    "topLevelEntries": [
+      "licences-native8"
+    ]
+  },
+  {
+    "archive": "max-and-api-streams.tar.gz",
+    "sha256": "bf3f2a917ccd92dd284ec93fc2d67c256f515e0b1d57421832f1f3ee0a516c80",
+    "bytes": 2337,
+    "topLevelEntries": [
+      "api-streams-1",
+      "max-enrollment-2",
+      "max-priority-1"
+    ]
+  },
+  {
+    "archive": "national-dns.tar.gz",
+    "sha256": "640b52be010d1e7065abf3c83b110bef961f281aea67b2a21db84dff2c5bda75",
+    "bytes": 2083,
+    "topLevelEntries": [
+      "national-dns-1"
+    ]
+  },
+  {
+    "archive": "native-goshran-pulls.tar.gz",
+    "sha256": "8988964f8c8a24f8b1ca4c815011f51f5011e023b3adedd0e0c43e41d4330787",
+    "bytes": 1986,
+    "topLevelEntries": [
+      "native-pulls-4"
+    ]
+  },
+  {
+    "archive": "native-image-execution.tar.gz",
+    "sha256": "8595476bee03cdc3989dc7d401d07848caacbfd7f8bee5ccec6b48bbcc1202be",
+    "bytes": 8873,
+    "topLevelEntries": [
+      "artifact-execution-1"
+    ]
+  },
+  {
+    "archive": "native11-install.tar.gz",
+    "sha256": "ad7d0cbed188797aff77f9e6b9bdba2ca6a8ecab77586a0e14a7fc48efc135b1",
+    "bytes": 16450,
+    "topLevelEntries": [
+      "final-profile-3",
+      "native11-aliases",
+      "native11-install",
+      "native11-package7"
+    ]
+  },
+  {
+    "archive": "native7-install.tar.gz",
+    "sha256": "450c3f6e6da03e539fddc2b10c1c4be9450cd766fddd34cd9d251316fa74f54a",
+    "bytes": 13639,
+    "topLevelEntries": [
+      "final-install",
+      "final-native-aliases",
+      "final-package4"
+    ]
+  },
+  {
+    "archive": "native8-install.tar.gz",
+    "sha256": "a45b53598cd7218314062e5bf4f1a73affd91ae49a79239ceb56787bad606aec",
+    "bytes": 13385,
+    "topLevelEntries": [
+      "native8-aliases",
+      "native8-install",
+      "native8-package4",
+      "pre-final-cleanup"
+    ]
+  },
+  {
+    "archive": "nov6-optional.tar.gz",
+    "sha256": "86fed022c37eb4f569a959e18dbf9ccbb1d0babf6c2de9b0e082ed71c5e20c8f",
+    "bytes": 12817,
+    "topLevelEntries": [
+      "artifact-chain-2",
+      "avian-interface-2",
+      "measurement-soak-1",
+      "native-pulls-1"
+    ]
+  },
+  {
+    "archive": "optional-experiments.tar.gz",
+    "sha256": "42bc4284fd3e297fd0322215b1a4eafab870c1bac4282a966dee347c8df18122",
+    "bytes": 7093,
+    "topLevelEntries": [
+      "first-write-1",
+      "presentation-1",
+      "presentation-details",
+      "reinvocation-1",
+      "sovereign-api",
+      "telegram-cycle-1"
+    ]
+  },
+  {
+    "archive": "origin-first-attempt.tar.gz",
+    "sha256": "6c0b0e59cd5954bfdb0f1aa1cf28fe5fa12cc466cf921d6318c6b1ed61fcbf3c",
+    "bytes": 824,
+    "topLevelEntries": [
+      "origin-resolution-1"
+    ]
+  },
+  {
+    "archive": "origin-resolution.tar.gz",
+    "sha256": "8c970212988662e438ab97a140fd18ba3160401608922a7edd7e6994f5ef7e27",
+    "bytes": 1754,
+    "topLevelEntries": [
+      "origin-resolution-2"
+    ]
+  },
+  {
+    "archive": "package-build3.tar.gz",
+    "sha256": "c18e92923b99f7f1b18f80c1c553a8f5e4c1991b24c58e7499a688c7c861ae52",
+    "bytes": 7178,
+    "topLevelEntries": [
+      "package",
+      "packages"
+    ]
+  },
+  {
+    "archive": "package-build4.tar.gz",
+    "sha256": "9916c5ac977a3ca233dd01d12c6c3eb361c8c9e350f50d01c22b55cb92f03a66",
+    "bytes": 8548,
+    "topLevelEntries": [
+      "binaries.sha256",
+      "index.pub",
+      "index.yaml",
+      "index.yaml.sig",
+      "rknetes-0.1.0-4.tgz"
+    ]
+  },
+  {
+    "archive": "package.tar.gz",
+    "sha256": "3caa6615063af5d6d67e1c0a79d7e5c323be78b9ca278c56533e86bdc6808c3d",
+    "bytes": 6871,
+    "topLevelEntries": [
+      "binaries.sha256",
+      "index.pub",
+      "index.yaml",
+      "index.yaml.sig",
+      "installed.yaml",
+      "rknetes-0.1.0.tgz",
+      "sha256.txt"
+    ]
+  },
+  {
+    "archive": "payload-archive.tar.gz",
+    "sha256": "2eb2a159d9ce1cd278ad301954db33d74d56c9ea44a368c14df522e710f411ed",
+    "bytes": 2705,
+    "topLevelEntries": [
+      "payload-archive-1",
+      "payload-archive-2",
+      "payload-archive-3",
+      "payload-archive-4",
+      "payload-archive-5",
+      "payload-archive-6"
+    ]
+  },
+  {
+    "archive": "prepared-first-attempts.tar.gz",
+    "sha256": "10c639984345c9c6f18989173e23a41777243234c537c9b33b3727bcfe29da38",
+    "bytes": 1514,
+    "topLevelEntries": [
+      "artifact-chain-1",
+      "avian-interface-1"
+    ]
+  },
+  {
+    "archive": "protocol-first-attempts.tar.gz",
+    "sha256": "2ec3409f3a1b3211b490889c4e7d93756e52dcf89697bc50f63ac0d614e60a81",
+    "bytes": 1957,
+    "topLevelEntries": [
+      "native-pulls-2",
+      "native-pulls-3",
+      "tunnel-ladder-1"
+    ]
+  },
+  {
+    "archive": "protocol-ladder.tar.gz",
+    "sha256": "7bd1b9a324c9cf1083b95f1993b7d235fb8e5d62b69aca9475a36a2393e77fcd",
+    "bytes": 3206,
+    "topLevelEntries": [
+      "compliant-3",
+      "tunnel-ladder-3"
+    ]
+  },
+  {
+    "archive": "release-inventory.tar.gz",
+    "sha256": "89ad71ad943dbb0e8b9a7142459c4044213f1156c621d4ed56c0b58f3567c5df",
+    "bytes": 524314,
+    "topLevelEntries": [
+      "provenance",
+      "sbom"
+    ]
+  },
+  {
+    "archive": "repeat-build-native11.tar.gz",
+    "sha256": "e23e2c489085922c01a6baa24039717d0696c2ef2f4cb43ca250777738edc9d0",
+    "bytes": 10493,
+    "topLevelEntries": [
+      "repeat-build-native11"
+    ]
+  },
+  {
+    "archive": "repeat-build-native8.tar.gz",
+    "sha256": "5ef94c11790ed2157c98a71450b26323cbcf57741e92fde70d955cc92fc385c3",
+    "bytes": 10211,
+    "topLevelEntries": [
+      "repeat-build"
+    ]
+  },
+  {
+    "archive": "repeat-build.tar.gz",
+    "sha256": "6478ae1d2eeef21a2717bcc9dad1b54ce3761c31b5ebc589166d86ad0027fd47",
+    "bytes": 10477,
+    "topLevelEntries": [
+      "repeat-build"
+    ]
+  },
+  {
+    "archive": "roaming-and-max-first.tar.gz",
+    "sha256": "f6c48e2c5a59700a984d64e6d8dcef28f21336d50e0056e2282c1ef5cb2acc53",
+    "bytes": 2495,
+    "topLevelEntries": [
+      "max-enrollment-1",
+      "roaming-2"
+    ]
+  },
+  {
+    "archive": "runtime-inventory.tar.gz",
+    "sha256": "d88c5a308d1c03ce8fcc994dfda02b98bc1cef1ca4134317adc5faf0a93d928c",
+    "bytes": 962937,
+    "topLevelEntries": [
+      "sbom-images"
+    ]
+  },
+  {
+    "archive": "scale-and-build.tar.gz",
+    "sha256": "f071dd1dc5e25ac136fb5ea4faa005c8f37e2a80361b9e069f36715887220b30",
+    "bytes": 5197,
+    "topLevelEntries": [
+      "blogger-scale-1",
+      "optional-build"
+    ]
+  },
+  {
+    "archive": "tunnel-cleanup-failure.tar.gz",
+    "sha256": "5c3903aa565156573224c6492904bccc51a3203da3f0c9fce45abf18b621cf49",
+    "bytes": 2508,
+    "topLevelEntries": [
+      "tunnel-ladder-2"
+    ]
+  },
+  {
+    "archive": "tunnel-ladder-and-recovery-attempt.tar.gz",
+    "sha256": "9f31dc046ab7fde645d38ad8896f2558674a1000349cba4b90f5a90411729efd",
+    "bytes": 3243,
+    "topLevelEntries": [
+      "compliant-2",
+      "tunnel-ladder-3"
+    ]
+  },
+  {
+    "archive": "watch-reconnect.tar.gz",
+    "sha256": "1b2847ebfbed952ef7e864f280594b06738e6d26b0a6a7e8bca9ee7d65e0aedb",
+    "bytes": 351,
+    "topLevelEntries": [
+      "watch-reconnect"
+    ]
+  },
+  {
+    "archive": "weekly-upstream.tar.gz",
+    "sha256": "97320cd9309d29eebdd1490da9683e519e96028a2139372aa0ef8e3b6f02d8e0",
+    "bytes": 1946,
+    "topLevelEntries": [
+      "weekly-sync"
+    ]
+  },
+  {
+    "archive": "whitelist-control.tar.gz",
+    "sha256": "21ffec0f6013f45ae3010acac7157e9952300998befbb2254408082ca3b25bed",
+    "bytes": 3147,
+    "topLevelEntries": [
+      "capacity-1",
+      "capacity-2",
+      "schedule-1"
+    ]
+  }
+]

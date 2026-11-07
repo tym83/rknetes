@@ -1,0 +1,20 @@
+[
+ {"alias":"eo-server","upstream":"kube-apiserver","flags":["--version"]},
+ {"alias":"prochee","upstream":"etcd","flags":["--version"]},
+ {"alias":"gosplan","upstream":"kube-scheduler","flags":["--version"]},
+ {"alias":"kru","upstream":"kube-controller-manager","flags":["--version"]},
+ {"alias":"uchastkovy","upstream":"kubelet","flags":["--version"]},
+ {"alias":"pochta","upstream":"kube-proxy","flags":["--version"]},
+ {"alias":"spravochnaya09","upstream":"coredns","flags":["-version"]},
+ {"alias":"terminal","upstream":"containerd","flags":["--version"]},
+ {"alias":"begunok","upstream":"runc","flags":["--version"]},
+ {"alias":"hodatay","upstream":"kubectl","flags":["version","--client","-o","yaml"]},
+ {"alias":"kormilo","upstream":"helm","flags":["version","--short"]},
+ {"alias":"gruzchik","upstream":"docker","flags":["--version"]},
+ {"alias":"resnichki","upstream":"cilium-dbg","flags":["version"]},
+ {"alias":"prometey","upstream":"prometheus","flags":["--version"]},
+ {"alias":"grafa","upstream":"grafana","flags":["--version"]},
+ {"alias":"vpered","upstream":"go","flags":["version"]},
+ {"alias":"yaml-office","upstream":"YAML","flags":[]},
+ {"alias":"otechestvennoe-yadro","upstream":"Linux","flags":[]}
+]

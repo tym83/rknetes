@@ -1,0 +1,13 @@
+apiVersion: apps.cozystack.io/v1alpha1
+kind: Tenant
+metadata:
+  name: rknetes
+  namespace: tenant-root
+spec:
+  etcd: false
+  ingress: false
+  monitoring: false
+  seaweedfs: false
+  resourceQuotas:
+    cpu: "40"
+    memory: 64Gi

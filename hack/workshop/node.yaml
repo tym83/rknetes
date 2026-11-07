@@ -1,0 +1,40 @@
+apiVersion: apps.cozystack.io/v1alpha1
+kind: VMDisk
+metadata:
+  name: NODE-media
+  namespace: tenant-rknetes
+spec:
+  optical: false
+  source:
+    http:
+      url: http://builder.tenant-rknetes.svc:8080/amd64/media.img
+  storage: 1Gi
+  storageClass: replicated
+---
+apiVersion: apps.cozystack.io/v1alpha1
+kind: VMDisk
+metadata:
+  name: NODE-system
+  namespace: tenant-rknetes
+spec:
+  optical: false
+  storage: 30Gi
+  storageClass: replicated
+---
+apiVersion: apps.cozystack.io/v1alpha1
+kind: VMInstance
+metadata:
+  name: NODE
+  namespace: tenant-rknetes
+spec:
+  instanceType: ""
+  instanceProfile: linux.efi
+  runStrategy: Always
+  resources:
+    cpu: 4
+    sockets: 1
+    memory: 8Gi
+  external: false
+  disks:
+  - name: NODE-media
+  - name: NODE-system
