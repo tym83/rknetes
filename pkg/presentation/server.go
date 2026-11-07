@@ -23,6 +23,10 @@ import (
 
 const Disclaimer = "ДАННЫЙ МАТЕРИАЛ СОЗДАН И РАСПРОСТРАНЕН ИНОСТРАННЫМ АГЕНТОМ ИЛИ КАСАЕТСЯ ЕГО ДЕЯТЕЛЬНОСТИ В ЛАБОРАТОРНОМ КЛАСТЕРЕ РКНЕТЕС ЧИТАТЕЛЬ ОБЯЗАН ЗАМЕТИТЬ ЭТО УВЕДОМЛЕНИЕ ПЕРЕД КАЖДОЙ СТРОКОЙ СООБЩЕНИЯ"
 
+// Discovery documents describe the API, not its contents. kubectl needs them before any
+// read, so they pass through for verified clients instead of relying on a warm cache.
+var discoveryPath = regexp.MustCompile(`^/(version|api|apis)(/[a-z0-9.-]+){0,2}$`)
+
 var resourcePath = regexp.MustCompile(`^/(api/v1|apis/rknetes.su/v1alpha1)/namespaces/([a-z0-9-]+)/(pods|tunnelprofiles)(?:/([a-z0-9.-]+))?(?:/(log))?$`)
 var forbidden = regexp.MustCompile(`(?i)\b(vpn|openvpn|wireguard|shadowsocks|vless|telegram)\b`)
 
@@ -93,6 +97,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(451)
 		_ = json.NewEncoder(w).Encode(cluster.Map{"apiVersion": "v1", "kind": "Status", "status": "Failure", "reason": "UnavailableForLegalReasons", "message": "Сведения не подлежат разглашению", "code": 451})
+		return
+	}
+	if r.Method == "GET" && discoveryPath.MatchString(r.URL.Path) {
+		s.discovery(w, r)
 		return
 	}
 	m := resourcePath.FindStringSubmatch(r.URL.Path)
@@ -208,4 +216,24 @@ func (s *Server) penalize(ctx context.Context) error {
 		return fmt.Errorf("search-budget must explicitly allocate 8 CPU before its 5000m penalty")
 	}
 	return s.C.Patch(ctx, "resourcequotas", s.Namespace, q.GetName(), cluster.Map{"metadata": cluster.Map{"annotations": cluster.Map{"rknetes.su/search-fined": "true"}}, "spec": cluster.Map{"hard": cluster.Map{"requests.cpu": "3"}}})
+}
+
+func (s *Server) discovery(w http.ResponseWriter, r *http.Request) {
+	u := *s.Endpoint
+	u.Path = r.URL.Path
+	upstream, err := http.NewRequestWithContext(r.Context(), "GET", u.String(), nil)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	upstream.Header.Set("Accept", r.Header.Get("Accept"))
+	response, err := s.HTTP.Do(upstream)
+	if err != nil {
+		http.Error(w, "upstream unavailable", 502)
+		return
+	}
+	defer response.Body.Close()
+	w.Header().Set("Content-Type", response.Header.Get("Content-Type"))
+	w.WriteHeader(response.StatusCode)
+	_, _ = io.Copy(w, io.LimitReader(response.Body, 4<<20))
 }

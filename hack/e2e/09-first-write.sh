@@ -71,6 +71,12 @@ primary={'apiVersion':'rknetes.su/v1alpha1','kind':'SociallySignificantResource'
 subprocess.run(base+['apply','-f','-'],input=json.dumps(primary).encode(),check=True)
 k('patch','socialresources','replica','--type','merge','-p','{"spec":{"approved":false}}')
 k('patch','whitelistmode','localize','--type','merge','-p','{"spec":{"enabled":true}}')
+# Wait for the controller to reinstall the policy and for Cilium to apply it, as above.
+for _ in range(30):
+    p=subprocess.run(base+['get','ciliumnetworkpolicy','whitelist'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    if p.returncode==0:break
+    time.sleep(1)
+else:raise AssertionError('whitelist was not reinstalled')
 time.sleep(5)
 code,body=post(4);assert code==503 and body['primaryCommitted'] and not body['replicaCommitted']
 assert count('ru-primary')==3 and count('replica')==2
