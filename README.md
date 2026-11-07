@@ -8,7 +8,7 @@ The native build runs `eo-server`, `gosplan` and `uchastkovy`. An unchanged upst
 
 The stand uses one workshop Tenant, `tenant-root/rknetes`, containing a builder and three kuberoot VMs. Compilation runs in that builder. Censorship experiments act only on explicitly labelled lab namespaces inside the nested cluster. The workshop control plane and other tenants are outside the experiment.
 
-Start with [stand operations](docs/stand.md), [design](docs/design.md), [measured evidence](docs/evidence.md) and the [remaining specification work](BACKLOG.md). The [registry application templates](docs/registry/README.md) describe the product's actual origins and leave rights-holder facts blank. Nothing has been submitted or published.
+Start with [stand operations](docs/stand.md), [design](docs/design.md), [measured evidence](docs/evidence.md) and the [specification acceptance record](BACKLOG.md). The [registry application templates](docs/registry/README.md) describe the product's actual origins and leave rights-holder facts blank. Nothing has been submitted or published.
 
 ```bash
 # From this checkout. Refuses to reinstall an existing stand.
@@ -26,4 +26,4 @@ The reproducible lab tour is `hack/demo.sh`, executed inside the builder. It req
 
 RKNetes code is Apache-2.0. Bundled Kubernetes, Linux, Cilium and other components retain their respective licences. `SESSION_LOG.md` is an ignored operational handover; credentials and signing keys stay outside the repository.
 
-The validated native profile passed **462/462 upstream conformance** and **21/21 demo checks**. [Optional experiments](docs/experiments.md) document further mechanisms and their boundaries; remaining specification requirements stay explicit in BACKLOG.
+The release is the native11 image, installed on all three nodes, with the signed package `kuberoot-rknetes` 0.1.0 build 7. On that build `hack/demo.sh` passes all **53 checks** of the complete tour and upstream conformance passes **462/462**. The [evidence report](docs/evidence.md) binds both results to the bundle hash and archives; [experiments](docs/experiments.md) describe each mechanism, and every item in [BACKLOG](BACKLOG.md) is closed.
